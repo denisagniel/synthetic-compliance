@@ -72,10 +72,10 @@ In addition to the above assumptions, we also consider one other assumption that
 \begin{align}
     E[Y_i(0) | \bU_i = (0, 1), \bX_i] = E[Y_i(0) | \bU_i = (0, 0), \bX_i]. \label{ncec}
 \end{align}
-The NCEC assumption states that compliers and never-takers have similar outcomes under control. 
+The NCEC assumption states that there are no structural differences between compliers and never-takers when they do not receive the treatment, that they have similar outcomes under control. 
 
 
-The target of estimation is the complier average causal effect (CACE) 
+The target of estimation is the complier average causal effect (CACE), or the causal effect among those whose receipt of treatment is actually effected by the instrument,
 \begin{align}
 \tau = E\{Y_i(1) - Y_i(0) | \bU_i = (0,1)\}. \label{cace}
 \end{align}
@@ -187,7 +187,7 @@ The target of estimation is the complier average causal effect (CACE)
 \subsection{Candidate CACE estimators}
 For clarity and ease of presentation, we restrict ourselves to a series of well-known estimators for the CACE. The SCE could easily be adapted to include other candidate estimators with ease. 
 
-Let $\Shat(\bX_i)$ be an estimate of $E[S_i | \bX_i]$, which is typically obtained froma linear regression of $S_i$ on $\bX_i$. Let $X$ be the the design matrix with $i$th row $\bX_i$, and let $X_\Shat$ be $X$ augmented with the column $\bShat = (\Shat_1, ..., \Shat_n)$. Let $\bY = (Y_1, .., Y_n)$ and $\bS = (S_1, .., S_n)$. Define $\xpp$ to be a submatrix of $X$ such that it only includes rows where $S_i = Z_i$: $\xpp = (X_i)_{S_i = Z_i}$. Similarly, define $S\spp = (S_i : S_i = Z_i), Y_\spp = (Y_i : S_i = Z_i)$. Further, define $\pi_{00} = P(\bU_i = (0,0) | Z_i = 1)$, and let $n_0 = \sum_{i=1}^n I\{Z_i = 0\}$ and $n_1 = \sum_{i=1}^n I\{Z_i = 1\}$ be the treatment assignment sample sizes.
+Let $\Shat(\bX_i)$ be an estimate of $E[S_i | \bX_i]$, which is typically obtained from a regression of $S_i$ on $\bX_i$. Let $X$ be the the design matrix with $i$th row $\bX_i$, and let $X_\Shat$ be $X$ augmented with the column $\bShat = (\Shat_1, ..., \Shat_n)$. Let $\bY = (Y_1, .., Y_n)$ and $\bS = (S_1, .., S_n)$. Define $\xpp$ to be a submatrix of $X$ such that it only includes rows where $S_i = Z_i$: $\xpp = (X_i)_{S_i = Z_i}$. Similarly, define $S\spp = (S_i : S_i = Z_i), Y_\spp = (Y_i : S_i = Z_i)$. Further, define $\pi_{00} = P(\bU_i = (0,0) | Z_i = 1)$, and let $n_0 = \sum_{i=1}^n I\{Z_i = 0\}$ and $n_1 = \sum_{i=1}^n I\{Z_i = 1\}$ be the treatment assignment sample sizes.
 
 We consider the following four estimators
 \begin{align}
@@ -196,7 +196,7 @@ We consider the following four estimators
     &\tauhat\sat = (X\trans X)\inv \bS\trans \bY \label{at_est}\\
     &\tauhat\spp = (\xpp\trans\xpp)\inv \bS\spp\trans \bY\spp\label{pp_est}
 \end{align}
-These estimators correspond to the typical IV estimator, $\tauhat\siv$, the typical two-stage least-squares estimator, $\tauhat\stsls$, the as-treated (AT) estimator $\tauhat\sat$, and the per-protocol (PP) estimator, $\tahat_spp$. See \cite{Little2018} for a discussion of the IV, AT, and PP estimators, and see \cite{antonelli2017synthetic} for a comparison of these estimators in the situation without covariates. 
+These estimators correspond to the typical IV estimator, $\tauhat\siv$, the typical two-stage least-squares estimator, $\tauhat\stsls$, the as-treated (AT) estimator $\tauhat\sat$, and the per-protocol (PP) estimator, $\tauhat_spp$. See \cite{Little2018} for a discussion of the IV, AT, and PP estimators, and see \cite{antonelli2017synthetic} for a comparison of these estimators in when no covariates are present. 
 
 % \paragraph{Vanilla IV.} Under Assumptions \ref{strong_monotonicity}, \ref{sutva}, and \ref{er}, the following estimator is consistent for the CACE \[
 % \tauhat\siv(0, 1) = \frac{n_1\inv\sum_{i=1}^nY_iI\{Z_i = 1\} - n_0\inv\sum_{i=1}^nY_iI\{Z_i = 0\}}{1 - \pihat_{00}}
@@ -285,17 +285,7 @@ We can then compute two sets of coefficients $\bbhat_a = \argmin{\bb}\bb\trans\S
 \]
 
 \section{Asymptotic behavior}
-In this section, we will discuss under what conditions the proposed estimators perform asymptotically as well as the optimal estimator. We subscript relevant estimators by $n$ here to make clear when quantities may change with $n$. Let $\Omega_n = \Sigma_n + \bDelta_n\bDelta_n\trans$, $\Omegahat_n = \Sigmahat_n + \bDeltahat_n\bDeltahat_n\trans$, and $\bS = \Omega_n\inv(\bthetahat - \theta)$. Then, according to Theorem 3.1 in \cite{lavancier2016general}, we obtain the finite-sample result
-\begin{align*}
-    (\thetahat_s - \theta^*)^2 \leq \deltatilde(\Omegahat_n, \Omega_n) \|\bS\|^2 E[(\theta^* - \theta)^2],
-\end{align*}
-where $\thetastar = \bbstar\trans\thetahat$, $\deltatilde(\Omegahat_n, \Omega_n) = 2\delta(\Omegahat_n, \Omega_n) + \delta(\Omegahat_n, \Omega_n)^2$ and $\delta(\Omegahat_n, \Omega_n) = \sup_{\bb \in \Bsc}\left|1 - \frac{\tr(\bb\trans\Omegahat_n\bb)}{\tr(\bb\trans\Omega_n\bb)}\right|$. This result limits the deviation of the synthetic estimator from the best possible synthetic estimator in terms of three terms: the error of the MSE estimator $\Omegahat_n$; the errzor of $\bthetahat$; and the MSE of the best possible synthetic estimator.
-
-Under the assumption $\bthetahat = O_p(1)$ and thus $\bS = O_p(1)$, it is for $\Omegahat_n\Omega_n\inv \rightarrow I$ as $n \rightarrow \infty$ to ensure that 
-\begin{align}
-    (\thetahat_s - \theta^*)^2 = o_p(1).
-\end{align}
-Further, assuming $\pihat_{00} - \pi_{00} = O_p(\nnhalf)$ and $\bShat_n - \bStilde = O_p(\nnhalf)$, for $\lim_n \bShat_n$, $\Sigma_n = O_p(n\inv)$, and all standard estimators will converge at a similar rate $\Sigmahat_n = O_p(n\inv)$. Further, as long as $E[\thetahat_0] = 0$, $\bDeltahat - \bDelta = O_p(\nnhalf)$. 
+In this section, we will establish the asymptotic distribution of the proposed estimator using the raw differences as the bias estimate. 
 
 \def\ddp{\bDelta_n\bDelta_n\trans}
 \def\ddhp{\bDeltahat_n\bDeltahat_n\trans}
@@ -414,23 +404,19 @@ where $C_i = I\{\bU_i = (0, 1)\}$ is an indicator of being a complier. The CACE 
 where $P(C_i = 1 | X_i) = \pi_i$. %We assume strong monotocity (Assumption \ref{strong_monotonicity}) throughout. 
 This model assumes the exclusion restriction (Assumption \ref{er}) holds.
 
-Assumption \ref{cncec1} (NCEC)  can be ensured by setting \[
+Assumption \ref{ncec} (NCEC)  can be ensured by setting \[
 \alpha_c = 0 \text{ and } \lambda_n = \lambda_c.
-\] 
-Similarly, Assumption \ref{cncet1} (NCET) is ensured by 
-\[
-\alpha_c = 0, \gamma_c = 0, \text{ and } \lambda_n = \lambda_c.
-\] 
-We generated data at three sample sizes, $n = 200, 500, 1000$, and we varied the level of violation of Assumptions \ref{cncec1} and \ref{cncet1} by letting $\alpha_c$ take values in (0, 0.1, 0.2, 0.3, 0.4, 0.5).  We also allow $\lambda_n, \lambda_c$, and $\gamma_c$ to be 0 or 1. We considered the four candidate estimators, as well as synthetic estimators based on the Vanilla IV estimator and the TSLS estimator, respectively. 
+\]
+We generated data at three sample sizes, $n = 200, 500, 1000$, and we varied the level of violation of Assumptions \ref{ncec} by letting $\alpha_c$ take values in (0, 0.1, 0.2, 0.3, 0.4, 0.5).  We also allow $\lambda_n, \lambda_c$, and $\gamma_c$ to be 0 or 1. We considered the four candidate estimators, as well as synthetic estimators based on the Vanilla IV estimator and the TSLS estimator, respectively. 
 
-The simulations demonstrate that the synthetic estimator has a robustness property. Consider Figure \ref{mse_plot_1}, which depicts one set of simulation results where $\alpha_c$ varies the degree to which the NCEC/NCET assumptions are violated. When $\alpha_c$ = 0, the NCEC/NCET assumptions hold, and the AT and PP estimators are unbiased. When $\alpha_c = 0.5$, the NCEC/NCET assumptions do not hold, and the AT and PP estimators incur bias. 
+The simulations demonstrate that the synthetic estimator has a robustness property. Consider Figure \ref{mse_plot_1}, which depicts one set of simulation results where $\alpha_c$ varies the degree to which the NCEC assumption is violated. When $\alpha_c$ = 0, the NCEC assumption holds, and the AT and PP estimators are unbiased. When $\alpha_c = 0.5$, the NCEC assumption does not hold, and the AT and PP estimators incur bias. 
 %
 \begin{figure}
 \centering
 \begin{tabular}{c}
 %\includegraphics{figure_1_correlations.eps}
 %\includegraphics{mse_bias_var_for_n200_cp06.png}
-\includegraphics[width =\textwidth]{mse_bias_var_for_n200_cp06.pdf}
+\includegraphics[width =\textwidth]{../figures/synthetic-}
 \end{tabular}\vspace{0.2in}
 \caption{MSE, bias, and variance of the four candidate estimators and the two synthetic estimators as $\alpha_c$ changes. The sample size is $n = 200$, and the rest of the parameters are set to $\gamma_c = 0, \lambda_n = \lambda_c = 1, \beta_0 = 0.41, \beta_1 = 2$.}\label{mse_plot_1}
 \end{figure}
