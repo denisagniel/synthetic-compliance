@@ -65,6 +65,12 @@ sim_fn <- function(n,
                    fn_list, 
                    run) {
   # browser()
+  library(purrr)
+  library(tidyr)
+  library(dplyr)
+  library(clustermq)
+  library(synthate)
+  library(glue)
   set.seed(run)
   print(glue('Simulation {run} for n = {n}, alpha_c = {alpha_c},
              alpha_n = {alpha_n}, lambda_c = {lambda_c}, 
