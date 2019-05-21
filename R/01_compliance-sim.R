@@ -70,7 +70,7 @@ sim_fn <- function(n,
              ps_grp = Hmisc::cut2(pr_score, g = 5))
     
     
-    out <- estimate_ates(new_data,  fnl)
+    out <- estimate_ates(new_data,  fn_list)
     as.matrix(out)
   }
   
