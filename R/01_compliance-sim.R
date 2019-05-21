@@ -39,19 +39,7 @@ fnl <- list(
   ipw_fn,
   ipw_regr_fn
 )
-bootfn <- function(x, i) {
-  # browser()
-  new_data <- x[i,]
 
-  ps_model <- glm(s ~ x, family = binomial, data = new_data %>% filter(z == 1))
-  new_data <- new_data %>%
-    mutate(pr_score = predict(ps_model, newdata = new_data, type = 'response'),
-           ps_grp = Hmisc::cut2(pr_score, g = 5))
-
-
-  out <- estimate_ates(new_data,  fnl)
-  as.matrix(out)
-}
 
 sim_fn <- function(n,
                    alpha_c,
@@ -71,6 +59,21 @@ sim_fn <- function(n,
   library(clustermq)
   library(synthate)
   library(glue)
+  
+  bootfn <- function(x, i) {
+    # browser()
+    new_data <- x[i,]
+    
+    ps_model <- glm(s ~ x, family = binomial, data = new_data %>% filter(z == 1))
+    new_data <- new_data %>%
+      mutate(pr_score = predict(ps_model, newdata = new_data, type = 'response'),
+             ps_grp = Hmisc::cut2(pr_score, g = 5))
+    
+    
+    out <- estimate_ates(new_data,  fnl)
+    as.matrix(out)
+  }
+  
   set.seed(run)
   print(glue('Simulation {run} for n = {n}, alpha_c = {alpha_c},
              alpha_n = {alpha_n}, lambda_c = {lambda_c}, 
