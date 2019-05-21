@@ -93,7 +93,7 @@ sim_fn <- function(n,
   sim_data <- sim_data %>%
     mutate(pr_score = predict(ps_model, newdata = sim_data, type = 'response'),
            ps_grp = Hmisc::cut2(pr_score, g = 5))
-  full_caces <- estimate_ates(sim_data, fnl)
+  full_caces <- estimate_ates(sim_data, fn_list)
   b_theta <- boot::boot(sim_data, bootfn, R = 200)$t
   boot_theta_s <- combine_estimators(ests = full_caces, boot_ests = b_theta)
   full_synth_ests <- boot_theta_s$ate_res %>%
@@ -112,8 +112,8 @@ sim_fn <- function(n,
   test_data <- test_data %>%
     mutate(pr_score = predict(ps_model_1, newdata = test_data, type = 'response'),
            ps_grp = Hmisc::cut2(pr_score, g = 5))
-  train_caces_1 <- estimate_ates(train_data, fnl)
-  test_caces_1 <- estimate_ates(test_data, fnl)
+  train_caces_1 <- estimate_ates(train_data, fn_list)
+  test_caces_1 <- estimate_ates(test_data, fn_list)
   
   # b_theta_1 <- boot::boot(train_data, bootfn, R = 200)$t
   boot_theta_s_1 <- combine_estimators(ests = train_caces_1, boot_ests = b_theta)
@@ -141,8 +141,8 @@ sim_fn <- function(n,
   test_data <- test_data %>%
     mutate(pr_score = predict(ps_model_2, newdata = test_data, type = 'response'),
            ps_grp = Hmisc::cut2(pr_score, g = 5))
-  train_caces_2 <- estimate_ates(train_data, fnl)
-  test_caces_2 <- estimate_ates(test_data, fnl)
+  train_caces_2 <- estimate_ates(train_data, fn_list)
+  test_caces_2 <- estimate_ates(test_data, fn_list)
   
   # b_theta_2 <- boot::boot(test_data, bootfn, R = 200)$t
   boot_theta_s_2 <- combine_estimators(ests = test_caces_2, boot_ests = b_theta)
