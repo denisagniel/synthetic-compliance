@@ -190,7 +190,12 @@ sim_fn <- function(n,
 #        compliance_p = 0.7,
 #        compliance_effect = 0.5,
 #        run = 0)
-
+options(
+  clustermq.defaults = list(ptn="short",
+                            log_file="Rout/log%a.log",
+                            time_amt = "6:00:00"
+  )
+)
 sim_res <- Q_rows(sim_params, sim_fn, 
                   const = list(fn_list = fnl),
                   fail_on_error = FALSE,
