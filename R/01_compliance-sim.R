@@ -13,15 +13,16 @@ library(glue)
 #'
 #' Set up simulations settings.
 #' 
-sim_params <- expand.grid(compliance_p = seq(0.5, 0.9, length = 5),
-                          compliance_effect = c(0, 0.5, 2),
+sim_params <- expand.grid(compliance_p = seq(0.5, 0.9, length = 3),
+                          compliance_effect = log(2),
                           alpha_n = 0,
                           alpha_c = seq(0, 0.5, length = 6),
                           lambda_n = 0:1,
                           lambda_c = 0:1,
                           gamma_c = 0:1,
                           gamma_n = 0,
-                          n = c(1000, 500, 200))
+                          n = c(200, 500, 1000),
+                          run = 1:5)
 
 fnl <- list(
   iv_fn,
@@ -52,16 +53,6 @@ bootfn <- function(x, i) {
   as.matrix(out)
 }
 
-params <- expand.grid(compliance_p = seq(0.5, 0.9, length = 5),
-                      compliance_effect = c(0, 0.5, 2),
-                      alpha_n = 0,
-                      alpha_c = seq(0, 0.5, length = 6),
-                      lambda_n = 0:1,
-                      lambda_c = 0:1,
-                      gamma_c = 0:1,
-                      gamma_n = 0,
-                      n = c(1000, 500, 200))
-
 sim_fn <- function(n,
                    alpha_c,
                    alpha_n,
@@ -70,9 +61,21 @@ sim_fn <- function(n,
                    gamma_c,
                    gamma_n,
                    compliance_p,
-                   compliance_effect) {
-  
-  sim_data <- generate_data_sj(n, compliance_p = compliance_p, compliance_effect = compliance_effect, alpha_c = alpha_c, alpha_n = alpha_n, lambda_c = lambda_c, lambda_n = lambda_n, gamma_c = gamma_c, gamma_n = gamma_n)
+                   compliance_effect,
+                   fn_list, 
+                   run) {
+  # browser()
+  set.seed(run)
+  print(glue('Simulation {run} for n = {n}, alpha_c = {alpha_c},
+             alpha_n = {alpha_n}, lambda_c = {lambda_c}, 
+             lambda_n = {lambda_n}, gamma_c = {gamma_c}, 
+             gamma_n = {gamma_n}, compliance_p = {compliance_p},
+             compliance_effect = {compliance_effect}.'))
+  sim_data <- 
+    generate_data_sj(n, compliance_p = compliance_p, 
+                     compliance_effect = compliance_effect, alpha_c = alpha_c, 
+                     alpha_n = alpha_n, lambda_c = lambda_c, lambda_n = lambda_n, 
+                     gamma_c = gamma_c, gamma_n = gamma_n)
   train_data <- sim_data %>% sample_frac(0.5)
   test_data <- sim_data %>% anti_join(train_data)
   
@@ -82,13 +85,15 @@ sim_fn <- function(n,
   ps_model <- glm(s ~ x, family = binomial, data = sim_data %>% filter(z == 1))
   
   sim_data <- sim_data %>%
-    mutate(pr_score = predict(ps_model, newdata = sim_data, type = 'response'))
+    mutate(pr_score = predict(ps_model, newdata = sim_data, type = 'response'),
+           ps_grp = Hmisc::cut2(pr_score, g = 5))
   full_caces <- estimate_ates(sim_data, fnl)
   b_theta <- boot::boot(sim_data, bootfn, R = 200)$t
   boot_theta_s <- combine_estimators(ests = full_caces, boot_ests = b_theta)
   full_synth_ests <- boot_theta_s$ate_res %>%
     group_by(theta_0, shrunk, synthetic) %>%
     transmute(estimate = ate,
+              var = var,
               sample = 'full')
   
   #----------------------------
@@ -154,38 +159,14 @@ sim_fn <- function(n,
   
   long_caces  <- full_caces %>%
     gather(theta_0, estimate) %>%
-    mutate(shrunk = FALSE,
+    mutate(var = diag(cov(b_theta)),
+           shrunk = FALSE,
            sample = 'full',
            synthetic = FALSE) %>%
     full_join(full_synth_ests) %>%
     full_join(holdout_ests)
   
-  
-  # ests_out <- data.frame(
-  #   estimator = c(
-  #     names(full_caces),
-  #     names(train_caces_1),
-  #     names(test_caces_2),
-  #     rep('synthetic',4)
-  #   ),
-  #   est = c(unlist(full_caces),
-  #           unlist(train_caces_1),
-  #           unlist(test_caces_2),
-  #           boot_theta_s$ate_res$ate[1],
-  #           boot_theta_s_1$ate_res$ate[1],
-  #           boot_theta_s_2$ate_res$ate[1],
-  #           (boot_theta_s_1$ate_res$ate[1]+
-  #              boot_theta_s_2$ate_res$ate[1])/2
-  #   ),
-  #   sample = c(rep('full', ncol(full_caces)),
-  #              rep('train', ncol(train_caces_1)),
-  #              rep('test', ncol(test_caces_2)),
-  #              'full', 'train->test', 'test->train', 'CV'
-  #   )
-  # )
-  # })
-  
-  res_l[[i]] <- long_caces %>%
+  out <- long_caces %>%
     mutate(n = n,
            alpha_n = alpha_n,
            alpha_c = alpha_c,
@@ -195,23 +176,23 @@ sim_fn <- function(n,
            lambda_n = lambda_n,
            compliance_p = compliance_p,
            compliance_effect = compliance_effect)
+  saveRDS(out, 
+          glue('{tmpdir}compliance-res-n{n}-alpha_c{alpha_c}-alpha_n{alpha_n}-lambda_c{lambda_c}-lambda_n{lambda_n}-gamma_c{gamma_c}-gamma_n{gamma_n}-compliance_p{compliance_p}-compliance_effect{compliance_effect}-sim{run}.rds'))
 }
 
-# n <- 1000
-res_l <- list()
-# for (i in 1:20) {
-for (i in 1:nrow(params)) {
-  # system.time({
-# i <- sample(1:nrow(params), 1)
-# params[i,]
-  
-  print(res_l[[i]])
-  res <- bind_rows(res_l)
-  saveRDS(res, file = paste0(resdir, 'res_', pn, '.rds'))
-  print(i)
-}
+# sim_fn(n = 200,
+#        alpha_c = 0,
+#        alpha_n = 0,
+#        lambda_c = 0,
+#        lambda_n = 0,
+#        gamma_c = 1,
+#        gamma_n = 0,
+#        compliance_p = 0.7,
+#        compliance_effect = 0.5,
+#        run = 0)
 
-# cbind(caces %>% unlist, test_caces %>% unlist, bhat %>% round(3), bhat_test %>% round(3), varest = diag(boot_theta_s$C) %>% round(3))
-
-
-
+sim_res <- Q_rows(sim_params, sim_fn, 
+                  const = list(fn_list = fnl),
+                  fail_on_error = FALSE,
+                  n_jobs = 20)
+saveRDS(sim_res, here('results/main-compliance-sim-results.rds'))
