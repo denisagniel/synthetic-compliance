@@ -1,5 +1,4 @@
-#### WIP
-## need to add clustermq functionality.
+
 remotes::install_github('denisagniel/synthate')  
 tmpdir <- '/n/data1/hms/dbmi/zaklab/dma12/synthetic-causal-estimation/tmp-compliance/'
 fs::dir_create(tmpdir)
@@ -51,7 +50,8 @@ sim_fn <- function(n,
                    compliance_p,
                    compliance_effect,
                    fn_list, 
-                   run) {
+                   run,
+                   tmpdir) {
   # browser()
   library(purrr)
   library(tidyr)
@@ -186,7 +186,7 @@ sim_fn <- function(n,
            compliance_p = compliance_p,
            compliance_effect = compliance_effect)
   saveRDS(out, 
-          glue('{tmpdir}compliance-res-n{n}-alpha_c{alpha_c}-alpha_n{alpha_n}-lambda_c{lambda_c}-lambda_n{lambda_n}-gamma_c{gamma_c}-gamma_n{gamma_n}-compliance_p{compliance_p}-compliance_effect{compliance_effect}-sim{run}.rds'))
+          glue('{tmpdir}compliance-res-n{n}-alpha_c{alpha_c}-alpha_n{alpha_n}-lambda_c{lambda_c}-lambda_n{lambda_n}-gamma_c{gamma_c}-gamma_n{gamma_n}-compliance_p{compliance_p}-sim{run}.rds'))
 }
 
 # sim_fn(n = 200,
@@ -206,7 +206,8 @@ options(
   )
 )
 sim_res <- Q_rows(sim_params, sim_fn, 
-                  const = list(fn_list = fnl),
+                  const = list(fn_list = fnl,
+                               tmpdir = tmpdir),
                   fail_on_error = FALSE,
                   n_jobs = 20)
 saveRDS(sim_res, here('results/main-compliance-sim-results.rds'))
