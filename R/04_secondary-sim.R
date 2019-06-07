@@ -175,7 +175,7 @@ sim_fn <- function(n,
 #        run = 0)
 options(
   clustermq.defaults = list(ptn="short",
-                            log_file="Rout/log%a.log",
+                            log_file="Rout/dl_log%a.log",
                             time_amt = "6:00:00"
   )
 )
