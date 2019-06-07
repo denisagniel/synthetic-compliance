@@ -3,12 +3,12 @@ remotes::install_github('denisagniel/synthate')
 tmpdir <- '/n/data1/hms/dbmi/zaklab/dma12/synthetic-causal-estimation/tmp-compliance-dl/'
 fs::dir_create(tmpdir)
 
-library(purrr)
-library(tidyr)
-library(dplyr)
+
+library(tidyverse)
 library(clustermq)
 library(synthate)
 library(glue)
+library(here)
 #'
 #' Set up simulations settings.
 #' 
@@ -57,6 +57,8 @@ sim_fn <- function(n,
     
     
     out <- estimate_ates(new_data,  fn_list)
+    # if (any(is.nan(unlist(out))) | 
+    #     any(is.na(unlist(out)))) browser()
     as.matrix(out)
   }
   
@@ -161,27 +163,18 @@ sim_fn <- function(n,
            theta = theta)
   saveRDS(out, 
           glue('{tmpdir}compliance-res-n{n}-theta{theta}-sim{run}.rds'))
+  out
 }
 
-# sim_fn(n = 200,
-#        alpha_c = 0,
-#        alpha_n = 0,
-#        lambda_c = 0,
-#        lambda_n = 0,
-#        gamma_c = 1,
-#        gamma_n = 0,
-#        compliance_p = 0.7,
-#        compliance_effect = 0.5,
-#        run = 0)
 options(
   clustermq.defaults = list(ptn="short",
                             log_file="Rout/dl_log%a.log",
-                            time_amt = "6:00:00"
+                            time_amt = "1:00:00"
   )
 )
 sim_res <- Q_rows(sim_params, sim_fn, 
                   const = list(fn_list = fnl,
                                tmpdir = tmpdir),
                   fail_on_error = FALSE,
-                  n_jobs = 20)
+                  n_jobs = 5)
 saveRDS(sim_res, here('results/secondary-compliance-sim-results.rds'))
