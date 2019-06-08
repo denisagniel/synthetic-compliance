@@ -14,7 +14,7 @@ library(here)
 #' 
 sim_params <- expand.grid(n = c(200, 500, 1000),
                           theta = seq(-2, 2, length = 11),
-                          run = 1:5)
+                          run = 1:1000)
 
 fnl <- list(
   iv_fn,
@@ -169,12 +169,12 @@ sim_fn <- function(n,
 options(
   clustermq.defaults = list(ptn="short",
                             log_file="Rout/dl_log%a.log",
-                            time_amt = "1:00:00"
+                            time_amt = "10:00:00"
   )
 )
 sim_res <- Q_rows(sim_params, sim_fn, 
                   const = list(fn_list = fnl,
                                tmpdir = tmpdir),
                   fail_on_error = FALSE,
-                  n_jobs = 5)
+                  n_jobs = 100)
 saveRDS(sim_res, here('results/secondary-compliance-sim-results.rds'))
