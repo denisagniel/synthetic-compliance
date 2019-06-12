@@ -1,0 +1,11 @@
+#!/bin/bash
+#SBATCH -n 1                    # Number of cores requested
+#SBATCH -t 4:00:00                    # Runtime in minutes
+# Or use HH:MM:SS or D-HH:MM:SS, instead of just number of minutes
+#SBATCH -p short                # Partition (queue) to submit to
+#SBATCH --open-mode=truncate      # append adds to outfile, truncate deletes first
+
+module load gcc/6.2.0
+module load R/3.4.1
+module load pandoc/2.1.1
+R CMD BATCH --no-save 03_collect-sims.R Rout/03_collect-sims.Rout
