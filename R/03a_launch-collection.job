@@ -4,6 +4,7 @@
 # Or use HH:MM:SS or D-HH:MM:SS, instead of just number of minutes
 #SBATCH -p short                # Partition (queue) to submit to
 #SBATCH --open-mode=truncate      # append adds to outfile, truncate deletes first
+#SBATCH --mem=16G
 
 module load gcc/6.2.0
 module load R/3.4.1
