@@ -29,51 +29,6 @@ sec_sum <- secondary_res %>%
   ) %>%
   ungroup
 
-base_estimators <- sec_sum %>%
-  filter(!synthetic,
-         n == 1000)
-
-ggplot(base_estimators,
-       aes(x = theta, y = bias, group = theta_0, color = theta_0)) +
-  facet_wrap(~ n, scales = 'free') +
-  geom_point() +
-  geom_line() + 
-  theme_bw() +
-  ggtitle('Bias of candidate')
-ggplot(base_estimators,
-       aes(x = theta, y = mse, group = theta_0, color = theta_0)) +
-  facet_wrap(~ n, scales = 'free') +
-  geom_point() +
-  geom_line() + 
-  theme_bw() +
-  ggtitle('MSE of candidate estimators')
-
-synthetic_compare <- sec_sum %>%
-  filter((synthetic & theta_0 %in% c('iv_est', 'tsls_est') & sample == 'full' & !shrunk) | 
-           !synthetic, n == 1000) %>%
-  mutate(name = 
-           case_when(synthetic ~ glue('synthetic-{theta_0}'),
-                     TRUE ~ theta_0))
-ggplot(synthetic_compare,
-       aes(x = theta, y = bias, group = name, color = theta_0, linetype = synthetic)) +
-  geom_point() +
-  geom_line() + 
-  theme_bw() +
-  ggtitle('Bias of estimators')
-ggplot(synthetic_compare,
-       aes(x = theta, y = mse, group = name, color = theta_0, linetype = synthetic)) +
-  facet_wrap(~ n, scales = 'free') +
-  geom_point() +
-  geom_line() + 
-  theme_bw() +
-  ggtitle('MSE of candidate estimators')
-ggplot(synthetic_compare,
-       aes(x = theta, y = var, group = name, color = theta_0, linetype = synthetic)) +
-  facet_wrap(~ n, scales = 'free') +
-  geom_point() +
-  geom_line() + 
-  theme_bw() +
-  ggtitle('Variance of candidate estimators')
 
 cv_compare <- sec_sum %>%
   filter((synthetic & theta_0 %in% c('iv_est', 'tsls_est') & !shrunk) | 
@@ -85,22 +40,47 @@ cv_compare <- sec_sum %>%
          lt = if_else(synthetic, glue('Synthetic-{sample}'), 'Non-synthetic'))
 ggplot(cv_compare,
        aes(x = theta, y = bias, group = name, color = theta_0, linetype = lt)) +
-  facet_wrap(~ n, scales = 'free') +
   geom_point() +
   geom_line() + 
   theme_bw() +
-  ggtitle('Bias of candidate')
+  ggtitle('Bias as a function of NCE violation',
+          subtitle = 'Simulation 2') +
+  labs(x = 'Value of omitted parameter', y = 'Bias') +
+  scale_linetype_discrete('') +
+  scale_color_discrete(expression(hat(theta)),
+    labels = c('As-treated', 'AT-stratified', 'PS-weighted', 
+               'PS-model-assisted',
+               'IV', 'Per-protocol', 'PP-stratified', 
+               'Two-stage LS')
+  )
 ggplot(cv_compare,
        aes(x = theta, y = mse, group = name, color = theta_0, linetype = lt)) +
-  facet_wrap(~ n, scales = 'free') +
   geom_point() +
   geom_line() + 
   theme_bw() +
-  ggtitle('MSE of candidate estimators')
+  ggtitle('MSE as a function of NCE violation',
+          subtitle = 'Simulation 2') +
+  labs(x = 'Value of omitted parameter', y = 'MSE')+
+  scale_linetype_discrete('') +
+  scale_color_discrete(expression(hat(theta)),
+                       labels = c('As-treated', 'AT-stratified', 'PS-weighted', 
+                                  'PS-model-assisted',
+                                  'IV', 'Per-protocol', 'PP-stratified', 
+                                  'Two-stage LS')
+  ) +
+  scale_y_log10()
 ggplot(cv_compare,
        aes(x = theta, y = var, group = name, color = theta_0, linetype = lt)) +
-  facet_wrap(~ n, scales = 'free') +
   geom_point() +
   geom_line() + 
   theme_bw() +
-  ggtitle('Variance of candidate estimators')
+  ggtitle('Variance as a function of NCE violation',
+          subtitle = 'Simulation 2') +
+  labs(x = 'Value of omitted parameter', y = 'Variance')+
+  scale_linetype_discrete('') +
+  scale_color_discrete(expression(hat(theta)),
+                       labels = c('As-treated', 'AT-stratified', 'PS-weighted', 
+                                  'PS-model-assisted',
+                                  'IV', 'Per-protocol', 'PP-stratified', 
+                                  'Two-stage LS')
+  )

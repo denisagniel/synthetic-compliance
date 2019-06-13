@@ -1,0 +1,3 @@
+scp   dma12@transfer.rc.hms.harvard.edu:~/synthetic-compliance/results/secondary-compliance-sim-results.rds ~/rprojects/han_model-averaging/synthetic-compliance/results
+
+scp   dma12@transfer.rc.hms.harvard.edu:~/synthetic-compliance/results/compliance-main-sim-summary.rds ~/rprojects/han_model-averaging/synthetic-compliance/results
