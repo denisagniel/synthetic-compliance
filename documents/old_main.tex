@@ -29,7 +29,7 @@
 \usepackage{graphicx}
 
 \usepackage[T1]{fontenc}
-\title{Synthetic compliance estimation}
+\title{Synthetic instrumental variable estimation}
 \RequirePackage{amsthm,amsmath,geometry,amsfonts}
 \RequirePackage{natbib}
 \usepackage[utf8]{inputenc}
@@ -43,25 +43,31 @@
 \maketitle
 
 \section{Introduction}
-Noncompliance is common in studies with randomized assignments \textemdash ~some study subjects may self-select into a different study condition than their randomly assigned condition, hence breaking the orthogonality between study conditions and confounders.  Without further assumptions, the presence of noncompliance can downgrade a randomized experiment to a non-experimental study.  In pragmatic clinical trials, natural experiments, and quasi-experiments, a popular approach to circumvent the noncompliance issue is the intention-to-treat (ITT) analysis \citep{roland1998understanding, hollis1999meant, heckman2001policy}.  An ITT analysis aims to estimate a ``real-world'' or ``diluted'' effect of a treatment, ignoring the noncompliance in the study sample and assuming that the level of noncompliance in the study sample reflects the actual situation if the treatment were to be implemented elsewhere \citep{ten2008intent}.  The estimand in an ITT analysis is usually referred to as the \textit{effectiveness} of a treatment.  
-An ITT analysis is straightforward for noncompliance, where the random assignments are used as the study factor and the actual treatment status subject to noncompliance are not considered.  Since the randomized assignment is orthogonal to all confounders, a simple two-sample comparison can be unbiased for estimating the effectiveness of a treatment \citep{angrist1999empirical, little2009comparison}. 
 
-By contrast, the \textit{efficacy} of a treatment or the \textit{complier average causal effect} (CACE) refers to the mean causal effect among those who will always comply to randomized assignments, i.e., the \textit{principal compliers} \citep{angrist1996identification, little2009comparison}.  In the Economics literature, a favored approach to estimate the efficacy of a treatment is a structural equation model, where the randomized assignment is considered as an instrument variable (IV) for the actual treatment status \citep{greene2003econometric}.  Under certain assumptions, the IV approach is unbiased for estimating the efficacy of a treatment.   See \citep{imbens2014instrumental} for a detailed survey of methods and development in this space. Despite its popularity, the IV approach can have a high variance, particularly if the sample proportion of principal compliers is low \citep{little2009comparison, antonelli2017synthetic}.
- 	
-Two different approaches, the per-protocol (PP) and as-treated (AT) analyses, have also received many applications \citep{higgins2008cochrane, mcnamee2009intention}. The per-protocol (PP) analysis subsets the sample to those whose actual treatment statuses are the same as their randomized assignments, i.e., \textit{observed compliers}.  However,  observed compliers are usually different from principal compliers. For example, those who would always refuse a treatment, i.e., \textit{never-takers}, cannot be differentiated from principal compliers when randomized to the control condition.  The difference between the observed and principal compliers results in biases in the PP analysis. By contrast, the as-treated (AT) analysis ignores the initial assignment and uses the actual treatment to estimate a treatment effect.  Due to various sample selection biases, the AT analysis can be severely biased.  Despite their biases, both the PP and AT analyses usually have a smaller estimation variance than the IV approach.  If we measure the efficiency of an estimator by its mean squared error (MSE), i.e., the sum of its squared bias and sampling variance, among IV, PP, and AT estimators, none can always outperform the others.  See, e.g., \citep{little2009comparison, antonelli2017synthetic}, for discussions of the scenarios where each estimator can outperform the others.  The suitable scenario for each estimator depends on non-estimable properties of some unobserved data, e.g., whether there is a mean difference in the outcome between non-takers and principal compliers when randomized to the control condition.  
 
-In this paper, we consider a synthetic estimator as a convex combination of the IV, AT, and PP estimators (referred to as the candidate estimators, hereafter).  
-Our approach is rooted in the theory of model averaging, which conventionally focuses on estimating coefficients in least square regression models (see \citep{buckland1997model, hjort2003frequentist, judge2004semiparametric, mittelhammer2005combining, longford2006missing, hansen2007least} as prominent examples) and predicting random effects in mixed-effect models \citep{robinson1991blup, ghosh1994small, Searle1997, longford2006missing}. We use the term synthetic estimation instead of model averaging because our candidate estimators do not belong the same class of models, although they target the same estimand of interest, i.e., the CACE.
+Noncompliance is common in studies with randomized assignments \textemdash ~some study subjects may self-select into a different study condition than their assigned condition, hence breaking the orthogonality between study conditions and all confounders.  Without further assumptions, the presence of noncompliance essentially downgrades a randomized experiment into a non-experimental study.  In pragmatic clinical trials and some natural experimental studies, a popular approach to circumvent the noncompliance issue is the intention-to-treat (ITT) analysis \citep{roland1998understanding, hollis1999meant, heckman2001policy}.  An ITT analysis aims to estimate a ``real-world'' effect, assuming that the observed level of noncompliance in the study sample reflects the actual situation if the treatment were to be implemented in the larger target population. 
+This estimand of an ITT analysis is usually referred to as the \textit{effectiveness} of a treatment.  
+Although an ITT analysis can be ambiguous for other types of violations to study protocols, it is straightforward in the case of noncompliance, where the random assignments are used as the study factor and the actual treatment status subject to noncompliance is ignored.  Since the randomized assignment is orthogonal to all confounders, a simple two-sample comparison can be unbiased for estimating the effectiveness of a treatment \citep{angrist1999empirical, Little2018}. 
 
-One purpose of synthetic estimation is to combine several available candidate estimators to form a single and unambiguous estimator.  In addition, by striking a balance between biases and variances, a combination of candidate estimators can have a smaller MSE than all candidate estimators. The theoretical framework of model-averaging is much wider than linear regression and mixed-effect models.  In the recent literature, \citep{lavancier2016general} outlined synthetic estimators for a very general class of problems and provide some asymptotic results. \citet{antonelli2017synthetic} proposed a synthetic estimator in the presence of non-compliance in the setting of a randomized controlled trial.  
+By contrast, the \textit{efficacy} of a treatment refers to the mean causal effect among those who will always comply to randomized assignments, i.e., the \textit{principal compliers}.  In the economic literature, a favored approach to estimate the efficacy of a treatment is by the structural equation model, where the randomized assignment $D$ is considered as an instrument variable (IV) for the actual treatment status $Z$.  Under certain assumptions, the IV approach is unbiased for estimating the efficacy of a treatment.  Despite its popularity, the IV approach can have potentially high variance, particularly if the sample proportion of principal compliers is low.  See \citep{imbens2014instrumental} for a detailed survey of methods and development in this space. 
+	
+Two different approaches, the per-protocol (PP) and as-treated (AT) analysis, have also received many applications. The per-protocol (PP) analysis subsets the sample to those whose actual treatment statuses are the same as their randomized assignments, i.e., \textit{observed compliers}.  However, the observed compliers are not necessarily the same as principal compliers. For example, those who would never always refuse a treatment, i.e., \textit{non-takers}, cannot be differentiated from principal compliers when randomized to the control condition.  The difference between the observed and principal compliers results in biases in the PP analysis. By contrast, the as-treated (AT) analysis ignores the initial assignment and uses the actual treatment to estimate a treatment effect.  Due to various sample selection biases, the AT analysis may be severely biased.  Despite their biases, both the PP and AT analyses can have a much smaller estimation variance than the popular IV approach. If we measure the efficiency of an estimator by its mean squared error, i.e., the sum of its squared bias and sampling variance, among IV, PP, and AT estimators, none can always outperform the others.  See, e.g., \citep{Little2018, antonelli2017synthetic}, for discussions of the scenarios where each estimator can outperform the others.  The suitable scenario for each estimator depends on the non-estimable properties of the unobserved potential outcomes or counterfactuals.  
 
-In the spirit of \citet{antonelli2017synthetic}, we propose a class of synthetic compliance estimators (SCE) which optimally combine candidate estimators of the CACE by minimizing the estimated MSE of the resulting estimator. The proposed SCE are appropriate for observational studies, and other non-experimental studies where covariates must be adjusted for in the estimation.  The SCE display a robustness property: without sacrificing too much on the estimation bias, it borrows information from other biased but precise candidate estimators to improve the overall efficiency estimation as measured by MSE. 
+In this paper, we consider a synthetic estimator as a convex combination of IV, AT, and PP estimators (referred to as the candidate estimators, hereafter).  Our approach is rooted in the theory of model averaging, which conventionally focuses on estimating coefficients in least square regression models (see \citep{hjort2003frequentist, hansen2007least} as prominent examples) and predicting for random effects in mixed-effect regressions.  As outlined in sdfXXX, the main advantage of model-averaging is to borrow information from all available estimators.  By striking a balance between biases and variances, some convex combinations of candidate estimators can have a smaller MSE than all candidates, in particular, many convex combinations can improve the MSE compared with the unbiased candidate estimator. The theoretical framework of model-averaging is much wider than these two classic application areas.  In the recent literature, \citep{lavancier2016general} outlined synthetic estimators for a very general class of problems and provide some asymptotic results. Another exception is \citet{antonelli2017synthetic}, who consider a synthetic estimator for the complier average causal effect (CACE) in the presence of non-compliance in the setting of a randomized controlled trial. 
 
-The rest of the paper is organized as follows. In Section 2, we outline specifics about the principal compliance framework and lay out the details of the candidate estimators in this setting. In Section 3, we present the SCE and their practical implementation. The asymptotic property of the SCE is discussed in Section 4.  Section 5 includes simulations demonstrating the robustness of the SCE. In Section 6 we apply the SCE to analyze a natural experiment. Section 7 contains concluding remarks.
+%Compliance is an important issue in many experimental and observational studies. Patients who in experimental studies are randomized to receive treatment may not take it, and thus the typical intention-to-treat (ITT) analysis may not capture the effect of actually receiving treatment. Similarly, in observational data when a natural experiment occurs, those who gain access to a service or program may not take advantage of it. In these cases, reasons for non-compliance may be unavailable to researchers, and thus direct estimation of the effect of the intervention may not be possible because of unmeasured confounding. In these cases, researchers typically invoke assumptions, specify models, and possibly restrict the population of interest to identify the causal effect of the treatment. 
+
+%Many such choices of assumptions and models (and thus estimators) are available. Two simple examples are the as-treated (AT) estimator, where treatment is assumed to be essentially unconfounded after accounting for observed covariates, and the per-protocol (PP) estimator, where the analysis is restricted to those who followed their treatment assignment. Another set of estimators arises from the instrumental variables (IV) literature, where the assumption that treatment assignment is only related to the outcome through treatment receipt is leveraged. See \citep{imbens2014instrumental} for a detailed survey of methods and development in this space. Typically, researchers examine a range of (untestable) assumptions about the various estimators and select one. 
+
+%However, no one estimator will always outperform the others (see, e.g., \citep{Little2018, antonelli2017synthetic} for such a discussion of the estimators described above). Therefore, it is often beneficial to borrow information from all available estimators by creating a synthetic estimator as an optimal combination of all candidate estimators. This type of approach has received a lot of attention in the world of model averaging, where the coefficients from a series of (typically nested) regression models are considered as candidate estimators (see \citep{hjort2003frequentist, hansen2007least} as prominent examples). Comparatively less attention has been paid to averaging non-regression-based estimators or estimators of causal parameters. An exception is \citep{lavancier2016general}, who outline synthetic estimators for a very general class of problems and provide some asymptotic results. Another exception is \citet{antonelli2017synthetic}, who consider a synthetic estimator for the complier average causal effect (CACE) in the presence of non-compliance in the setting of a randomized controlled trial with no covariates measured. There they show that synthetic estimation can provide robustness in that, while the synthetic estimator is typically not better than all candidate estimators (as measured by MSE), it is typically competitive with the best estimators and much better than the worst ones. 
+
+In the spirit of \citet{antonelli2017synthetic}, we propose a class of synthetic compliance estimators (SCEs) which optimally combine candidate estimators of the CACE by minimizing the mean squared error (MSE) of the resulting estimator. The proposed estimators are appropriate for observational studies, and studies where covariates are to be included in the analysis.  The SCE displays a robustness property which allows it to take advantage of high-bias/low-variance estimators in situations where that is advantageous without sacrificing too  much performance when it is not. %We demonstrate that, under certain conditions, the SCE is asymptotically equivalent to the oracle estimator, the best possible synthetic estimator. 
+
+The rest of the paper is organized as follows. In Section 2, we outline specifics about compliance and lay out the specific estimators we are considering in this work. In Section 3, we define the SCEs and deal with their practical implementation. Asymptotics are discussed in Section 4, and Section 5 includes simulations demonstrating the robustness of the approach. Section 6 contains concluding remarks.
 
 
 \section{Framework}
-Suppose interest lies in the effect of a treatment $S_i$ on an outcome $Y_i$ and there exists a pre-treatment instrument $Z_i$, such as allocation to treatment, for $n$ subjects indexed by $i$. Further, suppose $\bX_i$ is a set of covariates collected on these $n$ subjects. We assume throughout that $Z_i$ and $S_i$ are binary, so that they take values in $\{0, 1\}$. Let $S_i(z)$ be the treatment status that, possibly contrary to fact, would have been observed if $Z_i = z, z = 0, 1$. Based on the configuration of these counterfactuals, there are potentially four types of individuals in the population: \textit{always-} and \textit{never-takers} who are not influenced by the instrument and for whom $S_i(z) = 1$ (always-takers) or $S_i(z) = 0$ (never-takers), $z = 0, 1$; \textit{compliers} who take treatment according to the instrument $S_i(z) = z$; and \textit{defiers} who do the opposite of the instrument $S_i(z) = 1 - z$. Let $\pi_c = P(S_i(0) = 0, S_i(1) = 1)$ be the probability of being a complier. 
+Suppose interest lies in the effect of a treatment $S_i$ on an outcome $Y_i$ and there exists a pre-treatment instrument $Z_i$, such as allocation to treatment, for $n$ subjects indexed by $i$. And suppose $\bX_i$ is a set of covariates collected on these $n$ subjects. We assume throughout that $Z_i, S_i$ are binary, so that they take values in $\{0, 1\}$. Let $S_i(z)$ be the treatment status that, possibly contrary to fact, would have been observed if $Z_i = z, z = 0, 1$. Based on the configuration of these counterfactuals, there are potentially four types of individuals in the population: \textit{always-} and \textit{never-takers} who are not influenced by the instrument and for whom $S_i(z) = 1$ (always-takers) or $S_i(z) = 0$ (never-takers), $z = 0, 1$; \textit{compliers} who take treatment according to the instrument $S_i(z) = z$; and \textit{defiers} who do the opposite of the instrument $S_i(z) = 1 - z$. 
 
 Further define the counterfactual outcome $Y_i(z, s)$ to be the outcome that one would observe if, possibly contrary to fact, $Z_i = z$ and $S_i = s$. For these counterfactuals to make sense, we assume the no-interference or Stable Unit Treatment Value Assumption (SUTVA) holds \citep{rubin1978bayesian} for both the potential outcomes $Y_i(z,s)$ and the potential treatments $S_i(z)$. That is, that the potential outcomes and potential treatment values for individual $i$ do not depend on any other individual, and $S_i = S_i(1)Z_i + S_i(0)(1-Z_i)$ and 
 \begin{align*}
@@ -69,13 +75,13 @@ Further define the counterfactual outcome $Y_i(z, s)$ to be the outcome that one
 \end{align*} 
 
 \subsection{The estimand}
-Typically, the effect of most interest is the average treatment effect (ATE), $E[Y_i(1) - Y_i(0)]$, where $Y_i(s)$ is the counterfactual outcome that would have been observed if $S_i = s$. However, in many situations the ATE is not identifiable due to failure to measure all variables that confound the relationship between $S_i$ and $Y_i$ in $\bX_i$, so that 
+Typically the effect of most interest is the average treatment effect (ATE), $E[Y_i(1) - Y_i(0)]$, where $Y_i(s)$ is the counterfactual outcome that would have been observed if $S_i = s$. However, in many situations the ATE is not identifiable due to failure to measure all variables that confound the relationship between $S_i$ and $Y_i$ in $\bX_i$, so that 
 \[
 \{Y_i(0), Y_i(1)) \centernot\amalg S_i | \bX_i.
 \]
 In these cases, especially in studies where $Z_i$ is randomized such as in clinical drug trials, it is typical to estimate the so-called intention-to-treat (ITT) effect, or $E[Y_i | Z_i = 1] - E[Y_i | Z_i = 0]$, which is equivalent to the causal effect of treatment assignment when $Z_i$ is randomized, $E[Y_i(1, S_i(1)] - E[Y_i(0, S_i(0)]$. This effect is sometimes called \textit{treatment effectiveness}, but it does not tell us about the effect of $S_i$, or treatment \textit{efficacy}. 
 
-To get at treatment efficacy, the local average treatment effect \citep{Angrist1995} or the complier average causal effect (CACE) \citep{little2009comparison} may instead be selected as the target of estimation. The CACE is the causal effect among those whose receipt of treatment is affected by the instrument: 
+To get at treatment efficacy, the local average treatment effect \citep{Angrist1995} or the complier average causal effect (CACE) \citep{Little2018}, the causal effect among those whose receipt of treatment is actually affected by the instrument, may instead be selected as the target of estimation:
 \begin{align}
 \theta = E\{Y_i(1) - Y_i(0) | S_i(0) = 0, S_i(1) = 1\}. \label{cace}
 \end{align}
@@ -101,7 +107,7 @@ Assumption \ref{er} encodes the so-called exclusion restriction (ER), which stat
 We further may require a stronger assumption the effect of compliance:
 \begin{assumption}[No compliance effect]\label{nce}
 \begin{align*}
-    E[Y_i(z, s) | S_i(0) = 0, S_i(1) = 1, \bX_i] = E[Y_i(z, s) | S_i(0) = z, S_i(1) = z, \bX_i], z = 0, 1; s = 0, 1. 
+    E[Y_i(z, s) | S_i(0) = 0, S_i(1) = 1, \bX_i] = E[Y_i(z, s) | S_i(0) = z, S_i(1) = z, \bX_i], z = 0, 1. 
     \end{align*}
 \end{assumption}
 Assumption \ref{nce} is not needed for traditional IV estimators or two-stage least squares estimators. This assumption states that compliers ($S_i(0) = 0, S_i(1) = 1$) have the same outcomes as non-compliers and thus there is \textit{no compliance effect} (NCE) either when $Z_i = 0$ or $Z_i = 1$. This assumption was termed General Principal Ignorability  in \cite{Ding2017}.
@@ -229,9 +235,9 @@ For clarity and ease of presentation, we restrict ourselves to a series of well-
 
 \paragraph{IV estimator.} The first is the standard IV estimator
 \begin{align}
-    \thetahat\siv = \frac{n_1\inv\sum_{i=1}^nY_iI\{Z_i = 1\} - n_0\inv\sum_{i=1}^nY_iI\{Z_i = 0\}}{\pihat_c}. \label{iv_est}
+    \thetahat\siv = \frac{n_1\inv\sum_{i=1}^nY_iI\{Z_i = 1\} - n_0\inv\sum_{i=1}^nY_iI\{Z_i = 0\}}{\Phat(S_i(0) = 0, S_i(1) = 1)}. \label{iv_est}
 \end{align}
-Under assumptions \ref{iv_randomized}, \ref{er}, and \ref{monotonicity}, $\thetahat\siv$ is consistent for the CACE, and under assumption \ref{strong_monotonicity}, $\pihat_c = \Phat(S_i(0) = 0, S_i(1) = 1)$ may be estimated by $n_1\inv\sumin I\{S_i = 1 | Z_i = 1)$, with $n_z$ equal to the sample size with instrument value $Z_i = z$.
+Under assumptions \ref{iv_randomized}, \ref{er}, and \ref{monotonicity}, $\thetahat\siv$ is consistent for the CACE, and under \ref{strong_monotonicity}, $\Phat(S_i(0) = 0, S_i(1) = 1)$ may be estimated by $n_1\inv\sumin I\{S_i = 1 | Z_i = 1)$, with $n_z$ equal to the sample size with instrument value $Z_i = z$.
 
 \paragraph{Two-stage least squares.} The second is the two-stage least squares estimator of \cite{Angrist1995}, where the CACE is estimated as $\thetahat_{TSLS} = \thetahat$ from the model
 \begin{align}
@@ -255,8 +261,6 @@ Under assumptions \ref{iv_randomized}, \ref{er}, \ref{nce} and \ref{monotonicity
 \begin{align}
     \thetahat\sps = n_{11}\inv\sum_{i : S_i = 1, Z_i = 1} Y_i - n_0\inv\sum_{i : Z_i = 0} \frac{Y_i\ehat(\bX_i)}{\Phat(S_i(0) = 0, S_i(1) = 1)}.
 \end{align}
-Under assumptions \ref{iv_randomized}, \ref{nce} and \ref{strong_monotonicity}, $\thetahat\sps$ is consistent for the CACE. 
-
 The second estimator is a model-assisted version of the same estimator:
 \begin{align}
     \thetahat\saps &= n_{11}\inv\sumin (Y_i - \bbetahat_1\trans\bX_i)I\{S_i = 1, Z_i = 1\} - n_{0}\inv\sumin \frac{(Y_i - \bbetahat_0\trans\bX_i)\ehat(\bX_i)I\{Z_i = 0\}}{\Phat(S_i(0) = 0, S_i(1) = 1)} +\\
@@ -270,12 +274,8 @@ and $\bbetahat_0$ is estimated from the model
 \[
 Y_i = \beta_0 + \bbeta_1\trans\bX_i + \epsilon_i, i \in \{j : Z_j = 0\}.
 \]
-Under assumptions \ref{iv_randomized}, \ref{nce} and \ref{strong_monotonicity} -- no additional assumptions from $\thetahat\sps$ -- $\thetahat\saps$ is consistent for the CACE and has a lower asymptotic variance.
+
 \paragraph{Principal-score stratified estimators.} We finally estimate versions of the IV, AT, and PP estimators that are stratified by the principal score. We first estimate each estimator withiin quintiles of the principal score and then averaged across quintiles. We will denote these estimators as $\thetahat_{IVs}, \thetahat_{PPs}, \thetahat_{ATs}$. 
-
-\subsection{Some properties of candidate estimators}
-
-
 % \paragraph{Vanilla IV.} Under Assumptions \ref{strong_monotonicity}, \ref{sutva}, and \ref{er}, the following estimator is consistent for the CACE \[
 % \thetahat\siv(0, 1) = \frac{n_1\inv\sum_{i=1}^nY_iI\{Z_i = 1\} - n_0\inv\sum_{i=1}^nY_iI\{Z_i = 0\}}{1 - \pihat_{00}}
 % \]
@@ -309,61 +309,42 @@ Under assumptions \ref{iv_randomized}, \ref{nce} and \ref{strong_monotonicity} -
 
 \section{Synthetic estimation}
 
+In this section, we propose a series of synthetic estimators which leverage the information in all candidate estimators. Let the set of candidate estimators be $\bthetahat = (\thetahat_0, \thetahat_1, ..., \thetahat_k) = (\thetahat_0, \bthetahat_1)$, where $\thetahat_0$ is an estimator that can be presumed to be unbiased, and $\bthetahat_1$ collects all other candidates. Define $\cov(\bthetahat) = \Sigma$ and $E[\bthetahat - \theta] = \bDelta = (0, \Delta_1, ..., \Delta_k)$. Because the exclusion restriction (\ref{er}) can often be plausibly assumed to hold, we typically consider either the vanilla IV estimator or the TSLS estimator to be $\thetahat_0$: either $\bthetahat = (\thetahat\siv, \thetahat\stsls, \thetahat\sat, \thetahat\spp)$ or $\bthetahat = (\thetahat\stsls, \thetahat\siv, \thetahat\sat, \thetahat\spp)$. When the assumption (\ref{er}) is deemed unlikely, another estimator may be considered as $\thetahat_0$. 
 
-
-In this section, we propose a class of SCE which leverages the information in all candidate estimators. 
-Let the set of candidate estimators be denoted as $\bthetahat = (\thetahat_0, \thetahat_1, ..., \thetahat_k)' = (\thetahat_0, \bthetahat_1')'$, where $\thetahat_0$ is an estimator that can be presumed to be unbiased, and $\bthetahat_1$, a vector of length $k$, collects all other candidates.  Because the exclusion restriction (\ref{er}) can often be plausibly assumed to hold, we typically consider either the vanilla IV estimator or the TSLS estimator to be $\thetahat_0$.  When the assumption (\ref{er}) is deemed unlikely, another estimator may be considered as $\thetahat_0$. We consider a synthetic estimator as a convex combination of the candidates \[
-\bb'\bthetahat = b_0\thetahat_0 + \bb_1'\bthetahat_1
+We consider a synthetic estimator as a convex combination of the candidates \[
+\theta_s(\bb) = \bb\trans\bthetahat = b_0\thetahat_0 + \bb_1\trans\bthetahat_1
 \]
-where all entries of $\bb'$ are between 0 and 1, and sum to 1. 
+where $\bb \in \Bsc = \left\{\ba = (a_1, ... a_{k+1}): \bone_{k+1}\trans\ba = 1, a_i \geq 0\right\}$, so that $\bone_k\trans\bb_1 = 1 - b_0$. The synthetic estimator aims to improve on the unbiased $\theta_0$ by lowering its overall mean squared error (MSE) by including the (possibly biased) $\bthetahat$ in the hopes of attaining lower variance.
 
-The synthetic estimator aims to lower the MSE of the supposedly unbiased $\theta_0$ by including the possibly biased $\bthetahat$ in the hopes of attaining lower variance without overly sacrificing on the estimation bias.  To achieve this goal, the convex combination $\bbtilde$ would ideally be chosen to directly minimize the MSE.  We adopt the same rationale in \citep{robinson1991blup, longford2006missing} to derive the SCE. Specifically, 
-let the sampling variance of the candidate estimators be
-\begin{equation}
-\var \begin{pmatrix} \hat\theta_0 \\ \boldsymbol {\hat\theta}_1  \end{pmatrix} =
-\begin{pmatrix}     V_{0,n} & \mathbf C'_n\\
-                             \mathbf C_n     & \mathbf V_n \end{pmatrix},
-\end{equation}
-where the small $n$ in the subscript denotes the finite sample size. 
-Let the biases of candidate estimators be denoted as
-\begin{equation}\begin{split}
-    &\mathbf d_n = E(\boldsymbol {\hat\theta} - \theta) = (d_{0,n}, \mathbf d_n')'
-\end{split}\end{equation}
-Given $\bb$, the plug-in estimation for the MSE of $\bb'\bthetahat$ is
-\begin{equation}\begin{split}\label{bMSE}
- &\quad E[( \bb'\bthetahat - \theta)^2]  \\
-	&= (1 - \mathbf 1' \mathbf b)^2  (\hat d_{0,n}^2+ \hat V_{0,n}) + \mathbf {b' \hat V}_n \mathbf b  + 2 (1-\mathbf{1'b} )(\mathbf{\hat C}'_n + \hat d_{0,n}\hat{\mathbf d}'_n ) \mathbf{b} + (\mathbf{b'}\hat{\mathbf{d}}_n)^2  \\
-    &= \hat d_{0,n}^2 + \hat V_{0, n} - 2(\mathbf P_n + \hat d_{0,n}^2-\hat d_{0,n}\hat{\mathbf d}_n)' \mathbf b + \mathbf b'(\mathbf T_n + \mathbf D_n )\mathbf b,
-\end{split}\end{equation}
-where the hat symbol denotes an estimator for the corresponding sampling moment and 
-\begin{displaymath}\begin{split}
-&\mathbf P_n =\hat V_{0, n} - {\mathbf{\hat C}}_n, \\
-&\mathbf T_n= \hat V_{0,n} - \mathbf{1 \hat C'}_n - \mathbf{\hat C}_n \mathbf{1'} + \mathbf{\hat V}_n, \\
-&\mathbf D_n = \hat{\mathbf{d}}_n \hat{\mathbf{d}}_n' +\hat d_{0,n}^2 -2\hat d_{0,n}\mathbf 1\hat{\mathbf d}'_n,
-\end{split}\end{displaymath}
+To balance bias and variance, the linear combination $\bbtilde$ would ideally be chosen to directly minimize the MSE:
+\begin{align}
+    \bb^* = \argmin{\bb}MSE(\theta_s(\bb))
+\end{align}
+where 
+\begin{align*}
+\text{MSE}(\thetahat_s) &= E[(\thetahat_s - \btheta)^2] = E[(\bb\trans\bthetahat - \btheta)^2]\\
+%&= \bbtilde\trans\cov(\bthetatilde)\bbtilde + (\bbtilde\trans E[\bthetatilde] - \theta)^2\\
+%&= \bbtilde\trans\cov(\bthetatilde)\bbtilde + (\bb\trans E[\btheta] - \theta)^2\\
+&= \bb\trans\Sigma\bb + (\bb\trans \bDelta)^2.
+\end{align*}
 
-Let $\mathbf b^*$ be the minimizer of \eqref{bMSE}, which is a typical problem of constrained quadratic programming. Suppose $\mathbf b^*$ is not on the boundary of the convex constraint. Then, 
-\begin{equation} \label{eqn:opt}
-\mathbf b^* =  (\mathbf T_n + \mathbf D_n)^{-1}(\mathbf P_n +\hat d_{0,n}^2 -\hat d_{0,n}\hat{\mathbf d}_n).
-\end{equation}
-If $\mathbf b^*$ is out of the boundaries, \eqref{eqn:opt} needs to be projected to the boundaries of the convex constraints.  
+Of course, $\Sigma$ and $\bDelta$ are unknown a priori. The proposed estimator is then a plug-in estimator, based on estimates of $\Sigma$ and $\bDelta$,
+\begin{align}
+    \thetahat_s = \theta_s(\bbhat) = \bhat_0\thetahat_0 + \bbhat_1\trans\bthetahat_1
+\end{align}
+where $ \bbhat = \argmin{\bb}\widehat{MSE}(\theta_s(\bb)) = \argmin{\bb}\bb\trans\Sigmahat\bb + (\bb\trans \bDeltahat)^2$. 
 
-Our proposed SCE has the following general form
-\begin{equation}
-\hat\theta_s  = (1-\mathbf 1'\mathbf b^*) \hat\theta_0 + \mathbf {b^*}' \boldsymbol{\hat\theta}
-\end{equation}
+It is typically straightforward to compute $\Sigmahat$ by using for example the bootstrap. On the other hand, when it comes to estimating $\bDeltahat$, the situation is much more difficult. If we, for example, knew $\bDeltahat$, which corresponds to the bias in each candidate estimator, then we could just correct the bias in the candidate with the lowest variance. Despite this difficulty, we propose in the following some useful plug-in $\bDeltahat$s.
 
-It is typically straightforward to compute $\Sigmahat$ by using a resampling based method, e.g., the nonparametric bootstrap, jackknife, and random grouping methods.  However, by contrast it is much more difficult to estimate the finite-sample biases of candidate estimators.  We propose two ways for $\boldsymbol {\hat d}$.
-
-\paragraph{Bias estimate: raw differences between candidate estimators and $\hat \theta_0$}
-Because we assume that $\thetahat_0$ is unbiased, we can estimate the bias in the other candidate estimators by taking their raw differences with $\thetahat_0$:
+\paragraph{Bias estimate: raw differences.}
+Because we assume that $\bthetahat_0$ is unbiased, we can estimate the bias in the other estimators by taking their raw differences with $\bthetahat_0$:
 \[
-\boldsymbol{\hat d} = (0, \thetahat_1 - \thetahat_0, ..., \thetahat_k - \thetahat_0)'.
+\bDeltahat_r = (0, \thetahat_1 - \thetahat_0, ..., \thetahat_k - \thetahat_0).
 \]
-Denote the SCE using the raw difference as  $\thetahat_{sr}$.
+This results in the estimator $\thetahat_{sr} = \theta_s(\bbhat_r)$ where $\bbhat_r = \argmin{\bb}\bb\trans\Sigmahat\bb + (\bb\trans \bDeltahat_r)^2$.
 
-\paragraph{Bias estimate: shrinking raw differences.}
-Unless two candidate estimators are highly correlated, their raw differences can be highly variable. To ameliorate the variability, we may want to regularize the bias estimates by down-weighting the most highly variable ones: 
+\paragraph{Bias estimate: modified raw differences.}
+We know that the raw differences are not typically an accurate estimate of the bias, and they may tend to be highly variable. To ameliorate their variability, we may want to regularize the bias estimates by down-weighting the most highly variable ones: 
 \[
 \bDeltahat_m = \bw \cdot \bDeltahat_r
 \]
@@ -373,16 +354,13 @@ w_j = \frac{\Deltahat_j^2}{\sigmahat_0 + \sigmahat_j - 2\sigmahat_{0j} + \Deltah
 \]
 and $\Sigmahat_{mn} = \sigma_{(m-1)(n-1)}$
 If the bias $\Deltahat_j$ is large relative to $\widehat{\var}(\thetahat_1 - \thetahat_0)$, then the weight will be close to 1, meaning the bias is not shrunk very much. On the other hand, if the bias is small compared to the variance, the weight $w_j$ will be close to 0 and the bias will be shrunk toward 0. This results in the estimator $\thetahat_{sm} = \theta_s(\bbhat_m)$ where $\bbhat_m = \argmin{\bb}\bb\trans\Sigmahat\bb + (\bb\trans \bDeltahat_m0)^2$.
-
 \paragraph{Sample-splitting approach.}
-We also consider an approach which estimates the bias on an independent subset of data. Consider splitting the available data into two equally sized datasets, and estimating the candidate estimators on each. Let $\bthetahat_a = (\thetahat_{a0}, ..., \thetahat_{bk}$ be the set of candidates estimated on one half, and $\bthetahat_b = (\thetahat_{b0}, ..., \thetahat_{bk})$ be estimated on the other half. And let $\bDeltahat_a = (0, \thetahat_{a1} - \thetahat_{a0}, ..., \thetahat_{ak} - \thetahat_{a0})$, and let $\bDeltahat_b$ be defined accordingly. 
+We also consider an approach which estimates the bias on an independent set of data. Consider splitting the available data into two equally sized datasets, and estimating the candidate estimators on each. Let $\bthetahat_a = (\thetahat_{a0}, ..., \thetahat_{bk}$ be the set of candidates estimated on one half, and $\bthetahat_b = (\thetahat_{b0}, ..., \thetahat_{bk})$ be estimated on the other half. And let $\bDeltahat_a = (0, \thetahat_{a1} - \thetahat_{a0}, ..., \thetahat_{ak} - \thetahat_{a0})$, and let $\bDeltahat_b$ be defined accordingly. 
 
 We can then compute two sets of coefficients $\bbhat_a = \argmin{\bb}\bb\trans\Sigmahat\bb + (\bb\trans \bDeltahat_a)^2$ and $\bbhat_b = \argmin{\bb}\bb\trans\Sigmahat\bb + (\bb\trans \bDeltahat_b)^2$. We can then apply the coefficients computed on one half to the candidates from the other half and average the two:
 \[
 \thetahat_{ss} = \frac{1}{2}\bbhat_a\trans\bthetahat_b + \frac{1}{2}\bbhat_b\trans\bthetahat_a.
 \]
-
-
 
 \section{Asymptotic behavior}
 In this section, we will establish the asymptotic distribution of the proposed estimator using the raw differences as the bias estimate. We make the following assumptions on the asymptotic behavior of candidate estimators as well as their sampling variance and the corresponding estimators. 
@@ -612,30 +590,7 @@ When all candidate estimators have zero asymptotic bias, that is $\mathbf d = \m
 % $$
 
 \section{Simulation}
-
-We performed Monte Carlo experiments to demonstrate the finite-sample performance of the proposed compliance estimators. These simulations demonstrate the effects of compliance effects (in violation of assumption \ref{nce}) and sample size impact the performance of the proposed SCE. 
-
-We consider two data-generating mechanisms. First, we adapt the simulation set-up in \cite{Ding2017}. In this setting, the data-generating model takes the following form
-\begin{align}
-    Y_i(1) = \sum_{j=1}^5 X_{ij} + 2C_i + 1 + \epsilon_i\\
-    Y_i(0) = \sum_{j=1}^5 X_{ij} + 2 + \epsilon_i
-\end{align}
-where $C_i$ is an indicator of being a complier, $X_{ij} \sim N(0,1), j = 1, ..., 4$, and $X_{i5} \sim \text{Bernoulli}\{\pi_c(\bX_i)\}$ and $\logit\{\pi_c(\bX_i)\} = 0.5X_{i1} + 0.5X_{i2} + X_{i3} + X_{i4} + \eta X_{i5}$. 
-However, when the data are analyzed, $X_{i5}$ is omitted from the models, and therefore $\eta$ corresponds to a measure of the violation of assumption \ref{nce}. When $\eta$ is large in magnitude, we expect more bias in the estimators that rely on the assumption of no compliance effect, such as $\thetahat\sat, \thetahat\spp$, and $\thetahat\sps$. 
-
-We include all candidate estimators in the SCE, but for ease of presentation we include only $\thetahat\spp, \thetahat\sat, \thetahat\saps, \thetahat\siv, \thetahat\stsls$ in the figures below. 
-
-\begin{figure}
-\centering
-\begin{tabular}{c}
-%\includegraphics{figure_1_correlations.eps}
-%\includegraphics{mse_bias_var_for_n200_cp06.png}
-\includegraphics[width =\textwidth]{figures/secondary-sim-mse-plot.png}
-\end{tabular}\vspace{0.2in}
-\caption{MSE, bias, and variance of the four candidate estimators and the two synthetic estimators as $\alpha_c$ changes. The sample size is $n = 200$, and the rest of the parameters are set to $\gamma_c = 0, \lambda_n = \lambda_c = 1, \beta_0 = 0.41, \beta_1 = 2$.}\label{sec-sim-pl}
-\end{figure}
-
-The second data-generating mechanism is adapted from \citep{stuart2015assessing}. Here, the model has the following form:
+We adapt the simulation set-up in \citep{stuart2015assessing} which allows the examination of violatoins of assumption \ref{nce}. The model has the following form:
 \begin{align}
 Y_i = \alpha_c C_i + \gamma_cC_iZ_i + \lambda_n X_i + (\lambda_c - \lambda_n)C_iX_i + \epsilon_i
 \end{align}
