@@ -10,6 +10,7 @@ opts_chunk$set(warning = FALSE, message = FALSE, cache = FALSE, fig.width = 7, f
 library(tidyverse)
 library(here)
 library(glue)
+library(patchwork)
 
 secondary_res <- readRDS(here(
   'results/secondary-compliance-sim-results.rds'
@@ -32,55 +33,36 @@ sec_sum <- secondary_res %>%
 
 cv_compare <- sec_sum %>%
   filter((synthetic & theta_0 %in% c('iv_est', 'tsls_est') & !shrunk) | 
-           !synthetic,
-          n == 1000) %>%
+           !synthetic & theta_0 %in% c('atregr_est',
+                                       'ipw_regr_est',
+                                       'iv_est',
+                                       'ppregr_est',
+                                       'tsls_est')) %>%
   mutate(name = 
            case_when(synthetic ~ glue('synthetic-{theta_0}-{sample}'),
                      TRUE ~ theta_0),
          lt = if_else(synthetic, glue('Synthetic-{sample}'), 'Non-synthetic'))
-ggplot(cv_compare,
-       aes(x = theta, y = bias, group = name, color = theta_0, linetype = lt)) +
+bias_pl <- ggplot(cv_compare,
+       aes(x = theta, y = bias, group = name, color = lt, linetype = theta_0)) +
   geom_point() +
   geom_line() + 
-  theme_bw() +
+  theme_bw(base_size = 16) +
   ggtitle('Bias as a function of NCE violation',
           subtitle = 'Simulation 2') +
   labs(x = 'Value of omitted parameter', y = 'Bias') +
-  scale_linetype_discrete('') +
-  scale_color_discrete(expression(hat(theta)),
-    labels = c('As-treated', 'AT-stratified', 'PS-weighted', 
-               'PS-model-assisted',
-               'IV', 'Per-protocol', 'PP-stratified', 
-               'Two-stage LS')
-  )
-ggplot(cv_compare,
-       aes(x = theta, y = mse, group = name, color = theta_0, linetype = lt)) +
-  geom_point() +
-  geom_line() + 
-  theme_bw() +
-  ggtitle('MSE as a function of NCE violation',
-          subtitle = 'Simulation 2') +
-  labs(x = 'Value of omitted parameter', y = 'MSE')+
-  scale_linetype_discrete('') +
-  scale_color_discrete(expression(hat(theta)),
-                       labels = c('As-treated', 'AT-stratified', 'PS-weighted', 
-                                  'PS-model-assisted',
-                                  'IV', 'Per-protocol', 'PP-stratified', 
-                                  'Two-stage LS')
-  ) +
-  scale_y_log10()
-ggplot(cv_compare,
-       aes(x = theta, y = var, group = name, color = theta_0, linetype = lt)) +
-  geom_point() +
-  geom_line() + 
-  theme_bw() +
-  ggtitle('Variance as a function of NCE violation',
-          subtitle = 'Simulation 2') +
-  labs(x = 'Value of omitted parameter', y = 'Variance')+
-  scale_linetype_discrete('') +
-  scale_color_discrete(expression(hat(theta)),
-                       labels = c('As-treated', 'AT-stratified', 'PS-weighted', 
-                                  'PS-model-assisted',
-                                  'IV', 'Per-protocol', 'PP-stratified', 
-                                  'Two-stage LS')
-  )
+  scale_linetype_discrete(expression(hat(theta)),
+                          labels = c('As-treated', 
+                                     'PS-model-assisted',
+                                     'IV', 'Per-protocol',
+                                     'Two-stage LS')) +
+  facet_wrap(~ n, scales = 'free') +
+  scale_color_grey('', start = 0.3)
+mse_pl <- bias_pl + aes(y = mse) +
+  ggtitle('MSE as a function of NCE violation')
+var_pl <- bias_pl + aes(y = var) +
+  ggtitle('Variance as a function of NCE violation')
+
+full_pl <- mse_pl + bias_pl + var_pl + plot_layout(ncol = 1)
+full_pl
+ggsave(here('figures/secondary-sim-mse-plot.png'),
+       height = 16, width = 16)
