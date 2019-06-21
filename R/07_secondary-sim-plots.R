@@ -24,7 +24,7 @@ sec_sum <- secondary_res %>%
   summarise(
     bias = mean(estimate - 1, na.rm = TRUE),
     est_var = mean(var, na.rm = TRUE),
-    var = var(estimate, na.rm = TRUE),
+    emp_var = var(estimate, na.rm = TRUE),
     mse = mean((estimate - 1)^2, na.rm = TRUE),
     ci_cov = mean(estimate - 1.96*sqrt(var) < 1 &
       estimate + 1.96*sqrt(var) > 1),
@@ -93,7 +93,7 @@ mse_pl <- bias_pl + aes(y = mse) +
   labs(y = 'MSE') +
   scale_y_log10()+
   theme(legend.position = 'none')
-var_pl <- bias_pl + aes(y = var) +
+var_pl <- bias_pl + aes(y = emp_var) +
   ggtitle('Variance as a function of NCE violation') +
   labs(y = 'Variance') + 
   scale_y_log10()+
@@ -145,7 +145,7 @@ mse_pl <- bias_pl + aes(y = mse) +
   ggtitle('MSE as a function of NCE violation') +
   labs(y = 'MSE') +
   scale_y_log10()
-var_pl <- bias_pl + aes(y = var) +
+var_pl <- bias_pl + aes(y = emp_var) +
   ggtitle('Variance as a function of NCE violation') +
   labs(y = 'Variance') + 
   scale_y_log10() +
@@ -155,3 +155,31 @@ full_pl <- mse_pl + bias_pl + var_pl + plot_layout(ncol = 1)
 full_pl
 ggsave(here('figures/secondary-sim-synth-compare-plot.png'),
        height = 16, width = 16)
+
+
+#' ### Confidence intervals
+tsls_res <- sec_sum %>%
+  filter(theta_0 == 'tsls_est',
+         !is.na(ci_cov)) %>%
+  mutate(name = case_when(
+    !synthetic ~ 'Two-stage LS',
+    sample == 'CV' ~ 'SCE-CV',
+    shrunk ~ 'SCE-modified',
+    TRUE ~ 'SCE-raw'),
+    cov_se = sqrt(ci_cov*(1-ci_cov)/1000),
+    ci_h = ci_cov + 1.96*cov_se,
+    ci_l = ci_cov - 1.96*cov_se)
+ggplot(tsls_res,
+       aes(x = theta, y = ci_cov, fill = name)) +
+  facet_wrap(~ n) +
+  geom_col(position = 'dodge') +
+  geom_hline(aes(yintercept = 0.95), linetype = 2) +
+  theme_bw(base_size = 16) +
+  coord_cartesian(ylim = c(0.7, 1)) +
+  scale_fill_brewer('', direction = -1) +
+  ggtitle('95% Confidence interval coverage',
+          subtitle = 'Data-generating mechanism 1 (Ding and Lu)') +
+  labs(x = expression(eta), y = '95% confidence interval coverage') +
+  scale_y_continuous(labels = scales::percent)
+ggsave(here('figures/secondary-sim-ci-coverage.png'),
+       height = 5, width = 11)
