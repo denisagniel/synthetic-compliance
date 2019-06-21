@@ -20,6 +20,12 @@
 \def\sps{_{\text{PS}}}
 \def\saps{_{\text{APS}}}
 \def\xpp{X\spp}
+\def\sraw{_{s-\text{raw}}}
+\def\sshrunk{_{s-\text{shrunk}}}
+\def\ssplit{_{s-\text{split}}}
+\def\thraw{\thetahat\sraw}
+\def\thshr{\thetahat\sshrunk}
+\def\thspl{\thetahat\ssplit}
 
 
 
@@ -320,7 +326,7 @@ where all entries of $\bb'$ are between 0 and 1, and sum to 1.
 The synthetic estimator aims to lower the MSE of the supposedly unbiased $\theta_0$ by including the possibly biased $\bthetahat$ in the hopes of attaining lower variance without overly sacrificing on the estimation bias.  To achieve this goal, the convex combination $\bbtilde$ would ideally be chosen to directly minimize the MSE.  We adopt the same rationale in \citep{robinson1991blup, longford2006missing} to derive the SCE. Specifically, 
 let the sampling variance of the candidate estimators be
 \begin{equation}
-\var \begin{pmatrix} \hat\theta_0 \\ \boldsymbol {\hat\theta}_1  \end{pmatrix} =
+\Sigma = \var \begin{pmatrix} \hat\theta_0 \\ \boldsymbol {\hat\theta}_1  \end{pmatrix} =
 \begin{pmatrix}     V_{0,n} & \mathbf C'_n\\
                              \mathbf C_n     & \mathbf V_n \end{pmatrix},
 \end{equation}
@@ -337,42 +343,43 @@ Given $\bb$, the plug-in estimation for the MSE of $\bb'\bthetahat$ is
 \end{split}\end{equation}
 where the hat symbol denotes an estimator for the corresponding sampling moment and 
 \begin{displaymath}\begin{split}
-&\mathbf P_n =\hat V_{0, n} - {\mathbf{\hat C}}_n, \\
-&\mathbf T_n= \hat V_{0,n} - \mathbf{1 \hat C'}_n - \mathbf{\hat C}_n \mathbf{1'} + \mathbf{\hat V}_n, \\
-&\mathbf D_n = \hat{\mathbf{d}}_n \hat{\mathbf{d}}_n' +\hat d_{0,n}^2 -2\hat d_{0,n}\mathbf 1\hat{\mathbf d}'_n,
+&\mathbf P_n = P_n(\Sigmahat) =\hat V_{0, n} - {\mathbf{\hat C}}_n, \\
+&\mathbf T_n= T_n(\Sigmahat) = \hat V_{0,n} - \mathbf{1 \hat C'}_n - \mathbf{\hat C}_n \mathbf{1'} + \mathbf{\hat V}_n, \\
+&\mathbf D_n = D_n(\bdhat_n) = \hat{\mathbf{d}}_n \hat{\mathbf{d}}_n' +\hat d_{0,n}^2 -2\hat d_{0,n}\mathbf 1\hat{\mathbf d}'_n,
 \end{split}\end{displaymath}
 
 Let $\mathbf b^*$ be the minimizer of \eqref{bMSE}, which is a typical problem of constrained quadratic programming. Suppose $\mathbf b^*$ is not on the boundary of the convex constraint. Then, 
 \begin{equation} \label{eqn:opt}
-\mathbf b^* =  (\mathbf T_n + \mathbf D_n)^{-1}(\mathbf P_n +\hat d_{0,n}^2 -\hat d_{0,n}\hat{\mathbf d}_n).
+\mathbf b^* = b^*(\bdhat_n, \Sigmahat) = (\mathbf T_n + \mathbf D_n)^{-1}(\mathbf P_n +\hat d_{0,n}^2 -\hat d_{0,n}\hat{\mathbf d}_n).
 \end{equation}
 If $\mathbf b^*$ is out of the boundaries, \eqref{eqn:opt} needs to be projected to the boundaries of the convex constraints.  
 
 Our proposed SCE has the following general form
 \begin{equation}
-\hat\theta_s  = (1-\mathbf 1'\mathbf b^*) \hat\theta_0 + \mathbf {b^*}' \boldsymbol{\hat\theta}
+\hat\theta_s = (1-\mathbf 1'\mathbf b^*) \hat\theta_0 + \mathbf {b^*}' \boldsymbol{\hat\theta}_1
 \end{equation}
 
-It is typically straightforward to compute $\Sigmahat$ by using a resampling based method, e.g., the nonparametric bootstrap, jackknife, and random grouping methods.  However, by contrast it is much more difficult to estimate the finite-sample biases of candidate estimators.  We propose two ways for $\boldsymbol {\hat d}$.
+\subsection{Bias estimation}
+It is typically straightforward to compute $\Sigmahat$ (and thus $P_n$ and $T_n$) by using a resampling-based method, e.g., the nonparametric bootstrap, jackknife, or random grouping.  However, by contrast it is much more difficult to estimate the finite-sample biases of candidate estimators.  We propose three ways for computing $\boldsymbol {\hat d}_n$.
 
-\paragraph{Bias estimate: raw differences between candidate estimators and $\hat \theta_0$}
-Because we assume that $\thetahat_0$ is unbiased, we can estimate the bias in the other candidate estimators by taking their raw differences with $\thetahat_0$:
+\paragraph{Raw differences between candidate estimators and $\hat \theta_0$.}
+Because we assume that $\thetahat_0$ is unbiased, we can compute a crude estimate of the bias in the other candidate estimators by taking their raw differences with $\thetahat_0$:
 \[
-\boldsymbol{\hat d} = (0, \thetahat_1 - \thetahat_0, ..., \thetahat_k - \thetahat_0)'.
+\bdhat_n = (0, \thetahat_1 - \thetahat_0, ..., \thetahat_k - \thetahat_0)'.
 \]
-Denote the SCE using the raw difference as  $\thetahat_{sr}$.
+Denote the SCE using the raw difference as  $\thetahat_{s-\text{raw}}$.
 
-\paragraph{Bias estimate: shrinking raw differences.}
+\paragraph{Shrinking raw differences.}
 Unless two candidate estimators are highly correlated, their raw differences can be highly variable. To ameliorate the variability, we may want to regularize the bias estimates by down-weighting the most highly variable ones: 
 \[
-\bDeltahat_m = \bw \cdot \bDeltahat_r
+\bdhat_m = \bw \cdot \bdhat
 \]
 where $\ba \cdot \bb = (a_1b_1, ..., a_kb_k)$ and $\bw = (w_0, ..., w_k)$ with
 \[
-w_j = \frac{\Deltahat_j^2}{\sigmahat_0 + \sigmahat_j - 2\sigmahat_{0j} + \Deltahat_j^2}
+w_j = \frac{\dhat_j^2}{\sigmahat_0 + \sigmahat_j - 2\sigmahat_{0j} + \dhat_j^2}
 \]
-and $\Sigmahat_{mn} = \sigma_{(m-1)(n-1)}$
-If the bias $\Deltahat_j$ is large relative to $\widehat{\var}(\thetahat_1 - \thetahat_0)$, then the weight will be close to 1, meaning the bias is not shrunk very much. On the other hand, if the bias is small compared to the variance, the weight $w_j$ will be close to 0 and the bias will be shrunk toward 0. This results in the estimator $\thetahat_{sm} = \theta_s(\bbhat_m)$ where $\bbhat_m = \argmin{\bb}\bb\trans\Sigmahat\bb + (\bb\trans \bDeltahat_m0)^2$.
+and $\sigmahat_{kl} = \covhat(\thetahat_k, \thetahat_l)$. 
+If the bias $\dhat_j$ is large relative to $\widehat{\var}(\thetahat_1 - \thetahat_0) = \sigmahat_0 + \sigmahat_j - 2\sigmahat_{0j}$, then the weight will be close to 1, meaning the bias is not shrunk very much. On the other hand, if the bias is small compared to the variance, the weight $w_j$ will be close to 0 and the bias will be shrunk toward 0. This results in the estimator $\thetahat_{s-\text{shrunk}} = \theta_s(\bbhat_m)$ where $\bbhat_m = \argmin{\bb}\bb\trans\Sigmahat\bb + (\bb\trans \bDeltahat_m0)^2$.
 
 \paragraph{Sample-splitting approach.}
 We also consider an approach which estimates the bias on an independent subset of data. Consider splitting the available data into two equally sized datasets, and estimating the candidate estimators on each. Let $\bthetahat_a = (\thetahat_{a0}, ..., \thetahat_{bk}$ be the set of candidates estimated on one half, and $\bthetahat_b = (\thetahat_{b0}, ..., \thetahat_{bk})$ be estimated on the other half. And let $\bDeltahat_a = (0, \thetahat_{a1} - \thetahat_{a0}, ..., \thetahat_{ak} - \thetahat_{a0})$, and let $\bDeltahat_b$ be defined accordingly. 
@@ -637,7 +644,8 @@ where $P(C_i = 1 | X_i) = \pi_i$.
 
 Similarly to the first data-generating process, we generated data at three sample sizes, $n = 200, 500, 1000$, and we varied the level of violation of Assumption \ref{nce} by letting $\alpha_c$ take values in (0, 0.1, 0.2, 0.3, 0.4, 0.5).  We also allow $\lambda_n, \lambda_c$, and $\gamma_c$ to be 0 or 1. We compare the performance of a range of synthetic estimators to the performance of the candidate estimators.
 
-Figure \ref{sec-sim-pl} demonstrates the behavior of the SCE with $\thetahat_0 = \thetahat\stsls$ compared to $\thetahat\stsls, \thetahat\siv, \thetahat\sat,$ and $\thetahat\saps$ in data-generating mechanism 1. We included all candidate estimators in the SCE, but we compare the behavior of the SCE to a few instructive candidate estimators, so as not to clutter up results with extraneous information.  It is clear from the figure that the SCE strikes a balance between the low bias and high variance of $\thetahat\stsls$ and the high bias and low variance of $\thetahat\sat$ and $\thetahat\saps$. It took advantage of the variance reduction inherent in combining multiple estimators without incurring too much bias. For every value of $\eta$ and at all sample sizes, the SCE had a variance and MSE lower than $\thetahat\stsls$. It was never as efficient as the low-variance candidate estimators like $\thetahat\sat$, but it also never incurred nearly as much bias as they did, either. While $\thetahat\sat$ had bias as high as 30\% of the CACE in magnitude, the SCE never had bias that was more than about 5\% of the CACE.
+\subsection{Overall performance of SCE}
+Figure \ref{sec-sim-pl} demonstrates the behavior of the SCE $\thetahat_{s-\text{raw}}$ with $\thetahat_0 = \thetahat\stsls$ compared to $\thetahat\stsls, \thetahat\siv, \thetahat\sat,$ and $\thetahat\saps$ in data-generating mechanism 1. We included all candidate estimators in the SCE, but we compare the behavior of the SCE to a few instructive candidate estimators, so as not to clutter up results with extraneous information.  It is clear from the figure that the SCE strikes a balance between the low bias and high variance of $\thetahat\stsls$ and the high bias and low variance of $\thetahat\sat$ and $\thetahat\saps$. It took advantage of the variance reduction inherent in combining multiple estimators without incurring too much bias. For every value of $\eta$ and at all sample sizes, the SCE had a variance and MSE lower than $\thetahat\stsls$. It was never as efficient as the low-variance candidate estimators like $\thetahat\sat$, but it also never incurred nearly as much bias as they did, either. While $\thetahat\sat$ had bias as high as 30\% of the CACE in magnitude, the SCE never had bias that was more than about 5\% of the CACE.
 
 \begin{figure}
 \centering
@@ -646,10 +654,10 @@ Figure \ref{sec-sim-pl} demonstrates the behavior of the SCE with $\thetahat_0 =
 %\includegraphics{mse_bias_var_for_n200_cp06.png}
 \includegraphics[width =\textwidth]{figures/secondary-sim-mse-plot.png}
 \end{tabular}\vspace{0.2in}
-\caption{MSE, bias, and variance of the SCE with $\thetahat_0 = \thetahat\stsls$ compared to four of the candidate estimators for the CACE as $\eta$ changes. The SCE includes information from all candidate estimators, but only four are shown. Sample sizes ($n = 200, 500, 1000$) are given in different facets.}\label{sec-sim-pl}
+\caption{MSE, bias, and variance of the SCE with $\thetahat_0 = \thetahat\stsls$ compared to four of the candidate estimators for the CACE as $\eta$ changes in data-generating mechanism 1. The SCE includes information from all candidate estimators, but only four candidates are shown here. Sample sizes ($n = 200, 500, 1000$) are given in different facets.The y-axis for MSE and variance are given on the log-scale.}\label{sec-sim-pl}
 \end{figure}
 
-A similar robustness property was found in data-generating mechanism 2 (see Figure \ref{main-mse-p}. 
+A similar robustness property was found in data-generating mechanism 2 (see Figure \ref{main-mse-p}. The SCE produces a sizable MSE reduction compare to $\thetahat\stsls$ when $\alpha_c$ is small and thus the bias and MSE of $\thetahat\sat$ and $\thetahat\saps$ are small. As the bias in $\thetahat\sat$ and $\thetahat\saps$ increase, the MSE of the synthetic estimator hovers at or near the MSE of $\thetahat\stsls$. The effects of creating a synthetic estimator are largest when compliance and sample size are both low (upper left panel in Figure \ref{main-mse-pl}, where the SCE is the best estimator when $\alpha_c = 0.5$). 
 %
 \begin{figure}
 \centering
@@ -658,33 +666,37 @@ A similar robustness property was found in data-generating mechanism 2 (see Figu
 %\includegraphics{mse_bias_var_for_n200_cp06.png}
 \includegraphics[width =\textwidth]{figures/main-sim-mse-plot.png}
 \end{tabular}\vspace{0.2in}
-\caption{MSE of candidate estimators and the two synthetic estimators as $\alpha_c$ changes. Sample sizes are  and the rest of the parameters are set to $\gamma_c = 0, \lambda_n = \lambda_c = 1, \beta_0 = 0.41, \beta_1 = 2$.}\label{main-mse-pl}
+\caption{MSE of SCE with $\thetahat_0 = \thetahat\stsls$ compared to four of the candidate estimators for the CACE as $\alpha_c$ changes in data-generating mechanism 2. The SCE includes information from all candidate estimators, but only four candidates are shown here. Sample sizes of $n = 200, 500, 1000$ are given in the rows and compliance rates are given in the columns. Simulation parameters are set to $\gamma_c = 0, \lambda_n = \lambda_c = 1, \beta_0 = 0.41, \beta_1 = 2$. The y-axis is shown on the log-scale to highlight differences.}\label{main-mse-pl}
 \end{figure}
 %
-The figure demonstrates that the synthetic estimator has a robustness property. When $\alpha_c$ is low the AT/PP estimators have the lowest MSE, but when $\alpha_c$ grows, the TSLS estimator begins to outperform them, while the IV estimator is always the worst because of its high variance. We see that theh Synthetic IV estimator always improves on the IV estimator in these settings by dramatically reducing its variance. The Synthetic TSLS estimator similarly improves on the TSLS estimator when AT/PP have low bias, but as they incur more and more bias, the performance of the Synthetic TSLS begins to mimic that of the TSLS estimator. 
+
+\subsection{Effect of different bias estimates}
+The performance of the SCE when using different estimates of the bias are shown in Figure \ref{sec-sim-pl2}. Three SCEs are shown, $\thraw, \thshr$, and $\thspl$, each with $\thetahat_0 = \thetahat\stsls$. These are compared to $\thetahat\stsls$ and the highest-bias, lowest-variance estimator, $\thetahat\sat$, which illustrates the relevant features. 
+
+In the figure, $\thraw$ has performance closest to $\thetahat\stsls$ in terms of bias, variance, and MSE. As shown in Figure \ref{sec-sim-pl} as well, $\thraw$ took advantage of the other candidate estimators to decrease the variance of the TSLS estimator, while not incurring too much bias, even when the other estimators had a lot of bias. Using the alternative bias estimates loosened the relationship between $\thetahat_s$ and $\thetahat_0$, such that the SCEs took more advantage of the reduction in variance available from the other estimators, but at the same time suffered from higher bias when those estimators were more biased. In nearly all cases, $\thspl$ had the highest bias and lowest variance among the SCEs, with $\thshr$ falling between $\thspl$ and $\thraw$ in terms of both bias and variance. While $\thspl$ and $\thshr$ had markedly better performance than $\thraw$ when $\eta$ was close to 0 and all candidate estimators were unbiased, they also incurred upwards of 10-20\% bias in the extremes, and they even had worse performance than $\thetahat\stsls$ when sample size and $\eta$ were large ($n = 1000, \eta > 1$). 
 
 \begin{figure}
 \centering
 \begin{tabular}{c}
 %\includegraphics{figure_1_correlations.eps}
 %\includegraphics{mse_bias_var_for_n200_cp06.png}
-\includegraphics[width =\textwidth]{figures/synthetics-compare-plot.pdf}
+\includegraphics[width =\textwidth]{figures/secondary-sim-synth-compare-plot.png}
 \end{tabular}\vspace{0.2in}
-\caption{MSE, bias, and variance of the synthetic estimators using different estimates of the bias $\bDelta$, compared to the base TSLS estimator. The sample size is $n = 200$, and the rest of the parameters are set to $\gamma_c = 0, \lambda_n = \lambda_c = 1, \beta_0 = 0.41, \beta_1 = 2$.}\label{mse_plot_2}
+\caption{MSE, bias, and variance of versions of the SCE with $\thetahat_0 = \thetahat\stsls$ and different bias estimates ($\bdhat_n$) as $\eta$ changes in data-generating mechanism 1. These are compared to $\thetahat\stsls$ and $\thetahat\sat$. The SCE includes information from all candidate estimators, but only four candidates are shown here. Sample sizes ($n = 200, 500, 1000$) are given in different facets.The y-axis for MSE and variance are given on the log-scale.}\label{sec-sim-pl2}
 \end{figure}
 %
-The performance of the sample-split and modified raw difference synthetic estimators is demonstrated for the same settings in Figure \ref{mse_plot_2}. In the figure, the estimators using alternative approaches for the bias unsurprisingly have performance that follows a similar trajectory to the Synthetic TSLS. The figure shows that the alternative approaches, by attenuating bias estimates, allow the synthetic estimator to drift farther from the base TSLS estimator: when the AT/PP estimators are best, the alternative approaches benefit more from the good performance of AT/PP than the Synthetic TSLS. On the other hand, when the AT/PP estimators are biased, the alternative approaches are more sensitive to them and acquires a higher MSE compared to the Synthetic TSLS. We see the same behavior in all simulation settings: the synthetic estimator benefits when the AT/PP estimators are best, while taking a small hit in performance when AT/PP are much worse. See for example Figure \ref{mse_plot_3}.
+
+\subsection{Confidence interval coverage}
 
 \begin{figure}
 \centering
 \begin{tabular}{c}
 %\includegraphics{figure_1_correlations.eps}
 %\includegraphics{mse_bias_var_for_n200_cp06.png}
-\includegraphics[width =\textwidth]{figures/additional-mse-plot.pdf}
+\includegraphics[width =\textwidth]{figures/secondary-sim-synth-compare-plot.png}
 \end{tabular}\vspace{0.2in}
-\caption{MSE comparing the Synthetic TSLS estimator to other candidate estimators (top panel); and MSE comparing alternative approaches for bias estimation (bottom panel). The sample size is $n = 1000$, and the rest of the parameters are set to $\gamma_c = 0, \lambda_n = \lambda_c = 1, \beta_0 = 0.41, \beta_1 = 0.5$.}\label{mse_plot_3}
+\caption{MSE, bias, and variance of versions of the SCE with $\thetahat_0 = \thetahat\stsls$ and different bias estimates ($\bdhat_n$) as $\eta$ changes in data-generating mechanism 1. These are compared to $\thetahat\stsls$ and $\thetahat\sat$. The SCE includes information from all candidate estimators, but only four candidates are shown here. Sample sizes ($n = 200, 500, 1000$) are given in different facets.The y-axis for MSE and variance are given on the log-scale.}\label{sec-sim-pl2}
 \end{figure}
-
 \bibliography{compliance_refs}
 \bibliographystyle{unsrtnat}
 
