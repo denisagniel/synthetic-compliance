@@ -620,20 +620,8 @@ We consider two data-generating mechanisms. First, we adapt the simulation set-u
     Y_i(1) = \sum_{j=1}^5 X_{ij} + 2C_i + 1 + \epsilon_i\\
     Y_i(0) = \sum_{j=1}^5 X_{ij} + 2 + \epsilon_i
 \end{align}
-where $C_i$ is an indicator of being a complier, $X_{ij} \sim N(0,1), j = 1, ..., 4$, and $X_{i5} \sim \text{Bernoulli}\{\pi_c(\bX_i)\}$ and $\logit\{\pi_c(\bX_i)\} = 0.5X_{i1} + 0.5X_{i2} + X_{i3} + X_{i4} + \eta X_{i5}$. 
+where $C_i$ is an indicator of being a complier, $X_{ij} \sim N(0,1), j = 1, ..., 4$, and $X_{i5} \sim \text{Bernoulli}\{\pi_c(\bX_i)\}$ and $\logit\{\pi_c(\bX_i)\} = 0.5X_{i1} + 0.5X_{i2} + X_{i3} + X_{i4} + \eta X_{i5}$.
 However, when the data are analyzed, $X_{i5}$ is omitted from the models, and therefore $\eta$ corresponds to a measure of the violation of assumption \ref{nce}. When $\eta$ is large in magnitude, we expect more bias in the estimators that rely on the assumption of no compliance effect, such as $\thetahat\sat, \thetahat\spp$, and $\thetahat\sps$. We tested three different sample sizes $n = 200, 500, 1000$, and we let $\eta$ vary between -2 and 2.
-
-We include all candidate estimators in the SCE, but for ease of presentation we show only $\thetahat\sat, \thetahat\saps, \thetahat\siv, \thetahat\stsls$ in the figures below. 
-
-\begin{figure}
-\centering
-\begin{tabular}{c}
-%\includegraphics{figure_1_correlations.eps}
-%\includegraphics{mse_bias_var_for_n200_cp06.png}
-\includegraphics[width =\textwidth]{figures/secondary-sim-mse-plot.png}
-\end{tabular}\vspace{0.2in}
-\caption{MSE, bias, and variance of the candidate estimators and the two synthetic estimators as $\eta$ changes. Sample sizes ($n = 200, 500, 1000$) are given in different facets.}\label{sec-sim-pl}
-\end{figure}
 
 The second data-generating mechanism is adapted from \citep{stuart2015assessing}. Here, the model has the following form:
 \begin{align}
@@ -647,9 +635,21 @@ The model for compliance takes the form
 \end{align}
 where $P(C_i = 1 | X_i) = \pi_i$.
 
-We generated data at three sample sizes, $n = 200, 500, 1000$, and we varied the level of violation of Assumption \ref{nce} by letting $\alpha_c$ take values in (0, 0.1, 0.2, 0.3, 0.4, 0.5).  We also allow $\lambda_n, \lambda_c$, and $\gamma_c$ to be 0 or 1. We compare the performance of a range of synthetic estimators to the performance of the candidate estimators.
+Similarly to the first data-generating process, we generated data at three sample sizes, $n = 200, 500, 1000$, and we varied the level of violation of Assumption \ref{nce} by letting $\alpha_c$ take values in (0, 0.1, 0.2, 0.3, 0.4, 0.5).  We also allow $\lambda_n, \lambda_c$, and $\gamma_c$ to be 0 or 1. We compare the performance of a range of synthetic estimators to the performance of the candidate estimators.
 
-The simulations demonstrate that the synthetic estimator has a robustness property. Consider Figure \ref{mse_plot_1}, which depicts one set of simulation results where $\alpha_c$ varies the degree to which the NCEC assumption is violated. When $\alpha_c$ = 0, the NCEC assumption holds, and the AT and PP estimators are unbiased. When $\alpha_c = 0.5$, the NCEC assumption does not hold, and the AT and PP estimators incur bias. 
+Figure \ref{sec-sim-pl} demonstrates the behavior of the SCE with $\thetahat_0 = \thetahat\stsls$ compared to $\thetahat\stsls, \thetahat\siv, \thetahat\sat,$ and $\thetahat\saps$ in data-generating mechanism 1. We included all candidate estimators in the SCE, but we compare the behavior of the SCE to a few instructive candidate estimators, so as not to clutter up results with extraneous information.  It is clear from the figure that the SCE strikes a balance between the low bias and high variance of $\thetahat\stsls$ and the high bias and low variance of $\thetahat\sat$ and $\thetahat\saps$. It took advantage of the variance reduction inherent in combining multiple estimators without incurring too much bias. For every value of $\eta$ and at all sample sizes, the SCE had a variance and MSE lower than $\thetahat\stsls$. It was never as efficient as the low-variance candidate estimators like $\thetahat\sat$, but it also never incurred nearly as much bias as they did, either. While $\thetahat\sat$ had bias as high as 30\% of the CACE in magnitude, the SCE never had bias that was more than about 5\% of the CACE.
+
+\begin{figure}
+\centering
+\begin{tabular}{c}
+%\includegraphics{figure_1_correlations.eps}
+%\includegraphics{mse_bias_var_for_n200_cp06.png}
+\includegraphics[width =\textwidth]{figures/secondary-sim-mse-plot.png}
+\end{tabular}\vspace{0.2in}
+\caption{MSE, bias, and variance of the SCE with $\thetahat_0 = \thetahat\stsls$ compared to four of the candidate estimators for the CACE as $\eta$ changes. The SCE includes information from all candidate estimators, but only four are shown. Sample sizes ($n = 200, 500, 1000$) are given in different facets.}\label{sec-sim-pl}
+\end{figure}
+
+A similar robustness property was found in data-generating mechanism 2 (see Figure \ref{main-mse-p}. 
 %
 \begin{figure}
 \centering
@@ -658,7 +658,7 @@ The simulations demonstrate that the synthetic estimator has a robustness proper
 %\includegraphics{mse_bias_var_for_n200_cp06.png}
 \includegraphics[width =\textwidth]{figures/main-sim-mse-plot.png}
 \end{tabular}\vspace{0.2in}
-\caption{MSE of candidate estimators and the two synthetic estimators as $\alpha_c$ changes. Sample sizes are  and the rest of the parameters are set to $\gamma_c = 0, \lambda_n = \lambda_c = 1, \beta_0 = 0.41, \beta_1 = 2$.}\label{mse_plot_1}
+\caption{MSE of candidate estimators and the two synthetic estimators as $\alpha_c$ changes. Sample sizes are  and the rest of the parameters are set to $\gamma_c = 0, \lambda_n = \lambda_c = 1, \beta_0 = 0.41, \beta_1 = 2$.}\label{main-mse-pl}
 \end{figure}
 %
 The figure demonstrates that the synthetic estimator has a robustness property. When $\alpha_c$ is low the AT/PP estimators have the lowest MSE, but when $\alpha_c$ grows, the TSLS estimator begins to outperform them, while the IV estimator is always the worst because of its high variance. We see that theh Synthetic IV estimator always improves on the IV estimator in these settings by dramatically reducing its variance. The Synthetic TSLS estimator similarly improves on the TSLS estimator when AT/PP have low bias, but as they incur more and more bias, the performance of the Synthetic TSLS begins to mimic that of the TSLS estimator. 
