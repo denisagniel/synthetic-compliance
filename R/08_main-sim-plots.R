@@ -30,7 +30,8 @@ res <- sim_res %>%
          sample != 'CV') %>%
   mutate(name = 
            case_when(synthetic ~ 'SCE',
-                     TRUE ~ theta_0))
+                     TRUE ~ theta_0),
+         compliance_p = glue('{scales::percent(compliance_p)} compliance'))
 #-----------------------------------------
 ## gamma_c = 0
 ## lambda_n = 1
@@ -79,7 +80,7 @@ mse_pl <- ggplot(res,
                                   'IV',
                                   'As-treated', 
                                   'PS-model-assisted')) +
-  facet_grid(compliance_p ~ n, scales = 'free') +
+  facet_grid(n ~ compliance_p, scales = 'free') +
   scale_color_manual('',
                      breaks = c(FALSE, TRUE),
                      labels = c('Candidate', 'Synthetic'),
