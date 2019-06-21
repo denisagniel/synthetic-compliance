@@ -1,12 +1,14 @@
-#' ---
-#' title: "Compliance plots"
-#' output: github_document
-#' ---
-#' 
+Compliance plots
+================
+dagniel
+2019-06-21
+
+``` r
 library(knitr)
 opts_chunk$set(warning = FALSE, message = FALSE, cache = FALSE, fig.width = 14, fig.height = 14)
+```
 
-#'
+``` r
 library(tidyverse)
 library(here)
 library(glue)
@@ -101,11 +103,18 @@ var_pl <- bias_pl + aes(y = var) +
 
 full_pl <- mse_pl + bias_pl + var_pl + plot_layout(ncol = 1)
 full_pl
+```
+
+![](07_secondary-sim-plots_files/figure-markdown_github/unnamed-chunk-2-1.png)
+
+``` r
 ggsave(here('figures/secondary-sim-mse-plot.png'),
        height = 16, width = 16)
+```
 
-#' Compare the different synthetic estimators. 
-#' 
+Compare the different synthetic estimators.
+
+``` r
 compare_synths <- 
   sec_sum %>%
   filter(theta_0 == 'tsls_est' | (theta_0 == 'atregr_est' & !synthetic),
@@ -153,5 +162,11 @@ var_pl <- bias_pl + aes(y = var) +
 
 full_pl <- mse_pl + bias_pl + var_pl + plot_layout(ncol = 1)
 full_pl
+```
+
+![](07_secondary-sim-plots_files/figure-markdown_github/unnamed-chunk-3-1.png)
+
+``` r
 ggsave(here('figures/secondary-sim-synth-compare-plot.png'),
        height = 16, width = 16)
+```
