@@ -1,12 +1,14 @@
-#' ---
-#' title: "Compliance main sim results"
-#' output: github_document
-#' ---
-#' 
+Compliance main sim results
+================
+dagniel
+2019-06-21
+
+``` r
 library(knitr)
 opts_chunk$set(warning = FALSE, message = FALSE, cache = FALSE, fig.width = 7, fig.height = 7)
+```
 
-#'
+``` r
 library(tidyverse)
 library(glue)
 library(here)
@@ -31,16 +33,22 @@ res <- sim_res %>%
   mutate(name = 
            case_when(synthetic ~ 'SCE',
                      TRUE ~ theta_0))
-#-----------------------------------------
+```
+
+``` r
 ## gamma_c = 0
 ## lambda_n = 1
 ## lambda_c = 1
 ## compliance_effect = 2
 ## n = 200
 ## compliance_p = 0.6
-#-----------------------------------------------
+```
+
+``` r
 ## comparing synthetic vs regular
-#----------------------------------------------
+```
+
+``` r
 mse_pl <- ggplot(res,
                   aes(x = alpha_c, y = mse, group = name, 
                       linetype = name,
@@ -88,6 +96,11 @@ mse_pl <- ggplot(res,
   theme(legend.position = 'bottom', legend.key.size = unit(1.5, 'cm')) +
   scale_y_log10()
 mse_pl
+```
+
+![](08_main-sim-plots_files/figure-markdown_github/unnamed-chunk-5-1.png)
+
+``` r
 # mse_pl <- ggplot(this_res,
 #                  aes(x = alpha_c, y = mse, group = g, linetype = theta_0, color = synth)) +
 #   geom_line() +
@@ -108,3 +121,4 @@ mse_pl
 # mse_pl
 ggsave(here('figures/main-sim-mse-plot.png'),
        height = 16, width = 16)
+```
