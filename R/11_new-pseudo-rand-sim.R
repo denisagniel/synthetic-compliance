@@ -49,7 +49,7 @@ options(
                             time_amt = "12:00:00"
   )
 )
-sim_res <- Q_rows(sim_params, psr_sim_fn, 
+sim_res <- Q_rows(sim_params, synthate:::psr_sim_fn, 
                   const = list(fn_list = fnl,
                                tmpdir = tmpdir),
                   fail_on_error = FALSE,
