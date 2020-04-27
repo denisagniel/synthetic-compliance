@@ -16,7 +16,7 @@ sim_params <- expand.grid(compliance_p = seq(0.5, 0.9, length = 5),
                           p = 8,
                           delta = c(0, 1),
                           n = c(200, 500, 1000),
-                          run = 1:3)
+                          run = 1:1000)
 
 xs <- paste('x', 1:8, collapse = ' + ', sep = '')
 sfm <- as.formula(glue('s ~ {xs} + z'))
@@ -53,6 +53,9 @@ sim_res <- Q_rows(sim_params, synthate:::psr_sim_fn,
                   const = list(fn_list = fnl,
                                psfm = psfm,
                                tmpdir = tmpdir),
+                  export = list(sfm = sfm,
+                                fm = fm,
+                                yfm = yfm),
                   fail_on_error = FALSE,
-                  n_jobs = 3)
+                  n_jobs = 100)
 saveRDS(sim_res, here('results/pseudo-rand-sim.rds'))
