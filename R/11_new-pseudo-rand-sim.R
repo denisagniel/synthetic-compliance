@@ -51,6 +51,7 @@ options(
 )
 sim_res <- Q_rows(sim_params, synthate:::psr_sim_fn, 
                   const = list(fn_list = fnl,
+                               psfm = psfm,
                                tmpdir = tmpdir),
                   fail_on_error = FALSE,
                   n_jobs = 3)
