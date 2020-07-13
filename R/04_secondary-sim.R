@@ -15,25 +15,28 @@ library(here)
 sim_params <- expand.grid(n = c(200, 500, 1000),
                           theta = seq(-2, 2, length = 11),
                           run = 1:1000)
-
+xs <- paste('x')
+sfm <- as.formula(glue('s ~ {xs} + z'))
+psfm <- as.formula(glue('s ~ {xs}'))
+yfm <- as.formula(glue('y ~ shat + {xs}'))
+fm <- as.formula(glue('y ~ s + {xs}'))
 fnl <- list(
   iv_fn,
-  # at_fn,
-  # pp_fn,
-  tsls_fn,
-  # regr_fn,
-  atregr_fn,
-  ppregr_fn,
+  tsls_fn = function(ds) tsls_fn(ds = ds,
+                                 sfm = sfm,
+                                 yfm = yfm),
+  atregr_fn = function(ds) atregr_fn(ds = ds,
+                                     fm = fm),
+  ppregr_fn= function(ds) ppregr_fn(ds = ds,
+                                    fm = fm),
   ivs_fn,
-  ats_fn,
-  pps_fn,
-  # ivw_fn,
-  ipw_fn,
-  ipw_regr_fn,
-  ipws_fn,
-  ipwrs_fn
+  ats_fn = function(ds) ats_fn(ds = ds, fm = fm),
+  pps_fn = function(ds) pps_fn(ds = ds, fm = fm),
+  ipw_fn = function(ds) ipw_fn(ds = ds, p = 8),
+  ipw_regr_fn = function(ds) ipw_regr_fn(ds = ds, p = 8),
+  ipws_fn = function(ds) ipws_fn(ds = ds, p = 8),
+  ipwrs_fn = function(ds) ipwrs_fn(ds = ds, p = 8)
 )
-
 
 sim_fn <- function(n,
                    theta,
@@ -55,7 +58,11 @@ sim_fn <- function(n,
     ps_model <- glm(s ~ x, family = binomial, data = new_data %>% filter(z == 1))
     new_data <- new_data %>%
       mutate(pr_score = predict(ps_model, newdata = new_data, type = 'response'),
-             ps_grp = Hmisc::cut2(pr_score, g = 5))
+             ps_grp = Hmisc::cut2(pr_score, g = 5),
+             pi_c = mean(pr_score)) %>%
+      group_by(ps_grp) %>%
+      mutate(pi_cj = mean(pr_score)) %>%
+      ungroup
     
     
     out <- estimate_ates(new_data,  fn_list)
@@ -80,7 +87,11 @@ sim_fn <- function(n,
   
   sim_data <- sim_data %>%
     mutate(pr_score = predict(ps_model, newdata = sim_data, type = 'response'),
-           ps_grp = Hmisc::cut2(pr_score, g = 5))
+           ps_grp = Hmisc::cut2(pr_score, g = 5),
+           pi_c = mean(pr_score)) %>%
+    group_by(ps_grp) %>%
+    mutate(pi_cj = mean(pr_score)) %>%
+    ungroup
   full_caces <- estimate_ates(sim_data, fn_list)
   b_theta <- boot::boot(sim_data, bootfn, R = 200)$t
   boot_theta_s <- combine_estimators(ests = full_caces, boot_ests = b_theta)
@@ -96,10 +107,18 @@ sim_fn <- function(n,
   ps_model_1 <- glm(s ~ x, family = binomial, data = train_data %>% filter(z == 1))
   train_data <- train_data %>%
     mutate(pr_score = predict(ps_model_1, newdata = train_data, type = 'response'),
-           ps_grp = Hmisc::cut2(pr_score, g = 5))
+           ps_grp = Hmisc::cut2(pr_score, g = 5),
+           pi_c = mean(pr_score)) %>%
+    group_by(ps_grp) %>%
+    mutate(pi_cj = mean(pr_score)) %>%
+    ungroup
   test_data <- test_data %>%
     mutate(pr_score = predict(ps_model_1, newdata = test_data, type = 'response'),
-           ps_grp = Hmisc::cut2(pr_score, g = 5))
+           ps_grp = Hmisc::cut2(pr_score, g = 5),
+           pi_c = mean(pr_score)) %>%
+    group_by(ps_grp) %>%
+    mutate(pi_cj = mean(pr_score)) %>%
+    ungroup
   train_caces_1 <- estimate_ates(train_data, fn_list)
   test_caces_1 <- estimate_ates(test_data, fn_list)
   
@@ -125,10 +144,18 @@ sim_fn <- function(n,
   ps_model_2 <- glm(s ~ x, family = binomial, data = test_data %>% filter(z == 1))
   train_data <- train_data %>%
     mutate(pr_score = predict(ps_model_2, newdata = train_data, type = 'response'),
-           ps_grp = Hmisc::cut2(pr_score, g = 5))
+           ps_grp = Hmisc::cut2(pr_score, g = 5),
+           pi_c = mean(pr_score)) %>%
+    group_by(ps_grp) %>%
+    mutate(pi_cj = mean(pr_score)) %>%
+    ungroup
   test_data <- test_data %>%
     mutate(pr_score = predict(ps_model_2, newdata = test_data, type = 'response'),
-           ps_grp = Hmisc::cut2(pr_score, g = 5))
+           ps_grp = Hmisc::cut2(pr_score, g = 5),
+           pi_c = mean(pr_score)) %>%
+    group_by(ps_grp) %>%
+    mutate(pi_cj = mean(pr_score)) %>%
+    ungroup
   train_caces_2 <- estimate_ates(train_data, fn_list)
   test_caces_2 <- estimate_ates(test_data, fn_list)
   
@@ -167,6 +194,13 @@ sim_fn <- function(n,
           glue('{tmpdir}compliance-res-n{n}-theta{theta}-sim{run}.rds'))
   out
 }
+
+tst <- sample_n(sim_params, 1)
+with(tst, sim_fn(n = n,
+                 theta = theta,
+                 fn_list = fnl,
+                 run = run,
+                 tmpdir = tmpdir))
 
 options(
   clustermq.defaults = list(ptn="short",
