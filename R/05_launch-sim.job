@@ -9,6 +9,6 @@
 #SBATCH --mail-type=END         # Mail when the job ends
 
 module load gcc/6.2.0
-module load R/3.4.1
+module load R/3.6.1
 module load pandoc/2.1.1
 R CMD BATCH --no-save 04_secondary-sim.R Rout/04_secondary-sim.Rout
