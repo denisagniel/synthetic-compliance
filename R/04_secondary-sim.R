@@ -171,7 +171,7 @@ sim_fn <- function(n,
 options(
   clustermq.defaults = list(ptn="short",
                             log_file="Rout/dl_log%a.log",
-                            time_amt = "10:00:00"
+                            time_amt = "12:00:00"
   )
 )
 sim_res <- Q_rows(sim_params, sim_fn, 
