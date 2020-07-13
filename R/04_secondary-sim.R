@@ -29,7 +29,9 @@ fnl <- list(
   pps_fn,
   # ivw_fn,
   ipw_fn,
-  ipw_regr_fn
+  ipw_regr_fn,
+  ipws_fn,
+  ipwrs_fn
 )
 
 
