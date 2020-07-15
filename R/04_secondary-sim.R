@@ -11,7 +11,7 @@ library(glue)
 library(here)
 #'
 #' Set up simulations settings.
-#' 
+#'
 sim_params <- expand.grid(n = c(200, 500, 1000),
                           theta = seq(-2, 2, length = 11),
                           run = 1:1000)
@@ -50,6 +50,11 @@ sim_fn <- function(n,
   library(clustermq)
   library(synthate)
   library(glue)
+  xs <- paste('x')
+  sfm <- as.formula(glue('s ~ {xs} + z'))
+  psfm <- as.formula(glue('s ~ {xs}'))
+  yfm <- as.formula(glue('y ~ shat + {xs}'))
+  fm <- as.formula(glue('y ~ s + {xs}'))
   
   bootfn <- function(x, i) {
     # browser()
