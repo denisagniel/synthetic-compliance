@@ -199,13 +199,15 @@ sim_fn <- function(n,
           glue('{tmpdir}compliance-res-n{n}-theta{theta}-sim{run}.rds'))
   out
 }
+# 
+# tst <- sample_n(sim_params, 1)
+# with(tst, sim_fn(n = n,
+#                  theta = theta,
+#                  fn_list = fnl,
+#                  run = run,
+#                  tmpdir = tmpdir))
 
-tst <- sample_n(sim_params, 1)
-with(tst, sim_fn(n = n,
-                 theta = theta,
-                 fn_list = fnl,
-                 run = run,
-                 tmpdir = tmpdir))
+
 
 options(
   clustermq.defaults = list(ptn="short",
@@ -216,6 +218,10 @@ options(
 sim_res <- Q_rows(sim_params, sim_fn, 
                   const = list(fn_list = fnl,
                                tmpdir = tmpdir),
+                  export = list(sfm = sfm,
+                                fm = fm,
+                                psfm = psfm,
+                                yfm = yfm),
                   fail_on_error = FALSE,
                   n_jobs = 100)
 saveRDS(sim_res, here('results/secondary-compliance-sim-results.rds'))
